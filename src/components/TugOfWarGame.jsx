@@ -22,21 +22,45 @@ const TugOfWarGame = () => {
     return () => clearInterval(strengthDecayRef.current)
   }, [])
 
+  // Keyboard event handlers
+  useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (!isGameActive) return
+
+      const key = event.key.toLowerCase()
+      
+      // Red team keys: Q, W, E
+      if (key === 'q' || key === 'w' || key === 'e') {
+        handleRedPull()
+      }
+      // Blue team keys: I, O, P
+      else if (key === 'i' || key === 'o' || key === 'p') {
+        handleBluePull()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress)
+    }
+  }, [isGameActive])
+
   // Update rope position based on strength difference
   useEffect(() => {
     if (!isGameActive) return
 
     const strengthDiff = blueStrength - redStrength
     const newPosition = ropePosition + (strengthDiff * 0.01)
-    const clampedPosition = Math.max(-5, Math.min(5, newPosition))
+    const clampedPosition = Math.max(-11, Math.min(11, newPosition))
     
     setRopePosition(clampedPosition)
 
     // Check for winner
-    if (clampedPosition <= -4.5) {
+    if (clampedPosition <= -10.5) {
       setWinner('Red Team')
       setIsGameActive(false)
-    } else if (clampedPosition >= 4.5) {
+    } else if (clampedPosition >= 10.5) {
       setWinner('Blue Team')
       setIsGameActive(false)
     }
@@ -44,12 +68,12 @@ const TugOfWarGame = () => {
 
   const handleRedPull = () => {
     if (!isGameActive) return
-    setRedStrength(prev => Math.min(100, prev + 15))
+    setRedStrength(prev => Math.min(100, prev + 0.25))
   }
 
   const handleBluePull = () => {
     if (!isGameActive) return
-    setBlueStrength(prev => Math.min(100, prev + 15))
+    setBlueStrength(prev => Math.min(100, prev + 0.25))
   }
 
   const resetGame = () => {
@@ -87,7 +111,7 @@ const TugOfWarGame = () => {
 
       <div className="game-ui">
         <div className="game-header">
-          <h1 className="game-title">🐔 Chicken Pit Tug O' War 🐔</h1>
+          <h1 className="game-title">🐔 Chicken Pit 🕳️ ☠️</h1>
           <div className="game-status">{getPositionText()}</div>
         </div>
 
@@ -97,6 +121,7 @@ const TugOfWarGame = () => {
             <button className="pull-button" onClick={handleRedPull} disabled={!isGameActive}>
               Pull!
             </button>
+            <div className="keyboard-controls">Keys: Q, W, E</div>
             <div className="strength-meter">
               <div 
                 className="strength-fill" 
@@ -120,6 +145,7 @@ const TugOfWarGame = () => {
             <button className="pull-button" onClick={handleBluePull} disabled={!isGameActive}>
               Pull!
             </button>
+            <div className="keyboard-controls">Keys: I, O, P</div>
             <div className="strength-meter">
               <div 
                 className="strength-fill" 

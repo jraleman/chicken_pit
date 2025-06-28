@@ -3,18 +3,26 @@ import { useFrame } from '@react-three/fiber'
 import { Text, Box, Cylinder, Sphere } from '@react-three/drei'
 import * as THREE from 'three'
 
-const Player = ({ position, color, isLeft }) => {
+const Player = ({ position, color, isLeft, ropePosition }) => {
   const meshRef = useRef()
+  const groupRef = useRef()
   
   useFrame((state) => {
     if (meshRef.current) {
       // Add subtle breathing animation
       meshRef.current.scale.y = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.05
     }
+    
+    if (groupRef.current) {
+      // Add leaning effect based on rope tension
+      const leanAmount = Math.abs(ropePosition) * 0.05
+      const leanDirection = ropePosition > 0 ? (isLeft ? -1 : 1) : (isLeft ? 1 : -1)
+      groupRef.current.rotation.z = leanDirection * leanAmount
+    }
   })
 
   return (
-    <group position={position}>
+    <group ref={groupRef} position={position}>
       {/* Player body */}
       <Box ref={meshRef} args={[0.8, 1.5, 0.4]} position={[0, 0.75, 0]}>
         <meshLambertMaterial color={color} />
@@ -25,7 +33,7 @@ const Player = ({ position, color, isLeft }) => {
         <meshLambertMaterial color={color === '#ff4757' ? '#ff6b6b' : '#4834d4'} />
       </Sphere>
       
-      {/* Arms */}
+      {/* Arms - positioned for pulling */}
       <Box args={[0.2, 0.8, 0.2]} position={[isLeft ? 0.5 : -0.5, 1, 0.3]}>
         <meshLambertMaterial color={color} />
       </Box>
@@ -106,26 +114,33 @@ const Ground = () => {
 }
 
 const TugOfWarScene = ({ ropePosition }) => {
+  // Calculate player positions based on rope position
+  // Red team players move with the rope (negative direction)
+  const redBasePosition = -6 + ropePosition * 0.3 // Players move less than the rope for realism
+  
+  // Blue team players move with the rope (positive direction)  
+  const blueBasePosition = 6 + ropePosition * 0.3
+
   return (
     <>
       <Ground />
       
-      {/* Red team players */}
-      <Player position={[-6, 0, 1]} color="#ff4757" isLeft={true} />
-      <Player position={[-7, 0, -1]} color="#ff4757" isLeft={true} />
-      <Player position={[-8, 0, 0]} color="#ff4757" isLeft={true} />
+      {/* Red team players - positions adjust with rope */}
+      <Player position={[redBasePosition, 0, 1]} color="#ff4757" isLeft={true} ropePosition={ropePosition} />
+      <Player position={[redBasePosition - 1, 0, -1]} color="#ff4757" isLeft={true} ropePosition={ropePosition} />
+      <Player position={[redBasePosition - 2, 0, 0]} color="#ff4757" isLeft={true} ropePosition={ropePosition} />
       
-      {/* Blue team players */}
-      <Player position={[6, 0, 1]} color="#3742fa" isLeft={false} />
-      <Player position={[7, 0, -1]} color="#3742fa" isLeft={false} />
-      <Player position={[8, 0, 0]} color="#3742fa" isLeft={false} />
+      {/* Blue team players - positions adjust with rope */}
+      <Player position={[blueBasePosition, 0, 1]} color="#3742fa" isLeft={false} ropePosition={ropePosition} />
+      <Player position={[blueBasePosition + 1, 0, -1]} color="#3742fa" isLeft={false} ropePosition={ropePosition} />
+      <Player position={[blueBasePosition + 2, 0, 0]} color="#3742fa" isLeft={false} ropePosition={ropePosition} />
       
       {/* Rope */}
       <Rope ropePosition={ropePosition} />
       
-      {/* Team labels */}
+      {/* Team labels - also move with teams */}
       <Text
-        position={[-6, 3, 0]}
+        position={[redBasePosition, 3, 0]}
         fontSize={0.8}
         color="#ff4757"
         anchorX="center"
@@ -135,7 +150,7 @@ const TugOfWarScene = ({ ropePosition }) => {
       </Text>
       
       <Text
-        position={[6, 3, 0]}
+        position={[blueBasePosition, 3, 0]}
         fontSize={0.8}
         color="#3742fa"
         anchorX="center"
