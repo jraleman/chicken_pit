@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import TugOfWarScene from './TugOfWarScene'
+import AudioManager from './AudioManager'
+import ChickenAmbientSounds from './ChickenAmbientSounds'
+import DramaticSoundEffects from './DramaticSoundEffects'
 
 const TugOfWarGame = () => {
   const [ropePosition, setRopePosition] = useState(0) // -5 to 5, 0 is center
@@ -92,6 +95,25 @@ const TugOfWarGame = () => {
 
   return (
     <>
+      <AudioManager
+        redStrength={redStrength}
+        blueStrength={blueStrength}
+        winner={winner}
+        isGameActive={isGameActive}
+        ropePosition={ropePosition}
+      />
+      
+      <ChickenAmbientSounds
+        isGameActive={isGameActive}
+        winner={winner}
+      />
+      
+      <DramaticSoundEffects
+        ropePosition={ropePosition}
+        isGameActive={isGameActive}
+        winner={winner}
+      />
+      
       <Canvas
         camera={{ position: [0, 5, 10], fov: 60 }}
         style={{ width: '100vw', height: '100vh' }}
@@ -102,6 +124,8 @@ const TugOfWarGame = () => {
           ropePosition={ropePosition} 
           winner={winner} 
           isGameActive={isGameActive} 
+          redStrength={redStrength}
+          blueStrength={blueStrength}
         />
         <OrbitControls
           enablePan={false}

@@ -1,45 +1,106 @@
-# 🐔 Chicken Pit - Tug O' War Game
+# 🐔 Chicken Pit - Tug O' War Game 🎵
 
-A fun and interactive Tug-O-War game built with React and Three.js!
+A fun and interactive Tug-O-War game built with React and Three.js with amazing audio effects!
 
-## Features
+## 🎮 Features
 
 - **3D Graphics**: Beautiful 3D rendered game using Three.js and React Three Fiber
 - **Real-time Gameplay**: Interactive tug-of-war mechanics with strength meters
 - **Team Competition**: Red Team vs Blue Team competition
 - **Dynamic Physics**: Rope moves based on team strength difference
 - **Visual Feedback**: Strength meters, position indicators, and winner announcements
-- **Responsive Controls**: Click buttons to pull the rope for your team
+- **Responsive Controls**: Click buttons or use keyboard controls to pull the rope
+- **🎵 AMAZING AUDIO SYSTEM**: Immersive sound experience with:
+  - **Background Music**: Upbeat chicken-themed melodies during gameplay
+  - **Sound Effects**: Chicken clucks, wing flaps, rope creaking, and pulling sounds
+  - **Dynamic Audio**: Sounds react to game intensity and player actions
+  - **Victory Fanfares**: Epic victory music with team-specific melodies
+  - **Dramatic Effects**: Tension risers, heartbeat sounds during close calls
+  - **Ambient Sounds**: Random chicken clucks and environmental audio
+  - **Audio Controls**: Volume slider and mute button for perfect audio control
+  - **Audio-Reactive Visuals**: Chickens pulse and bounce with sound effects
+
+## 🎵 Audio Features
+
+### 🎼 Dynamic Background Music
+- Procedurally generated chicken-themed melodies
+- Music adapts to game state and intensity
+- Automatic looping with smooth transitions
+
+### 🐔 Chicken Sound Effects
+- Multiple chicken cluck variations
+- Wing flapping sounds during intense moments
+- Audio-reactive chicken animations (chickens pulse and bounce when making sounds)
+
+### 🎯 Gameplay Audio
+- Unique pull sounds for each team (different frequencies)
+- Rope creaking sounds based on tension
+- Strength-based audio intensity
+- Sound particles and visual effects
+
+### 🏆 Victory & Drama
+- Team-specific victory fanfares (different melodies for Red vs Blue)
+- Dramatic tension risers during close calls
+- Heartbeat sounds when near victory
+- Defeat sounds for losing team
+- Celebration sparkle effects
+
+### 🎛️ Audio Controls
+- Master volume control (0-100%)
+- Mute/unmute toggle
+- Persistent audio settings
+- Visual audio control panel
 
 ## How to Play
 
-1. **Red Team**: Click the "Pull!" button on the left side to add strength to the red team
-2. **Blue Team**: Click the "Pull!" button on the right side to add strength to the blue team
+1. **Red Team**: Click the "Pull!" button on the left or use keyboard keys (Q, W, E)
+2. **Blue Team**: Click the "Pull!" button on the right or use keyboard keys (I, O, P)
 3. **Objective**: Pull the rope to your side! Get the rope past your goal line to win
 4. **Strategy**: Strength decays over time, so timing and coordination matter
 5. **Reset**: Use the "Reset Game" button to start a new match
+6. **Audio**: Use the volume control in the top-right to adjust sound levels
 
-## Game Mechanics
+## 🎮 Game Mechanics
 
-- **Strength System**: Each button click adds 15 strength points (max 100)
+- **Strength System**: Each action adds 0.25 strength points (max 100)
 - **Decay**: Strength automatically decreases by 1 point every 100ms
 - **Rope Movement**: The rope moves based on the difference in team strengths
-- **Win Conditions**: Move the rope 4.5 units toward your goal line to win
-- **Visual Indicators**: 
+- **Win Conditions**: Move the rope 10.5 units toward your goal line to win
+- **Audio Feedback**: Every action triggers unique sound effects
+- **Visual Effects**: 
   - Green field with white center line and colored goal lines
-  - 3D player characters representing each team
-  - Animated rope with golden center marker
-  - Spectator characters cheering from the sidelines
+  - 3D chicken characters representing each team with animations
+  - Animated rope with dynamic positioning
+  - Spectator chickens cheering from the sidelines
+  - Sound particles and audio-reactive visual effects
 
-## Technology Stack
+## 🎵 Audio System Architecture
+
+The game features a sophisticated Web Audio API-based sound system:
+
+### Components:
+- **AudioManager**: Main audio controller with background music and core sounds
+- **DramaticSoundEffects**: Tension, victory, and dramatic moment sounds
+- **ChickenAmbientSounds**: Random ambient chicken sounds
+- **SoundParticles**: Visual particle effects that react to audio
+- **AudioReactiveChicken**: Chickens that pulse and bounce with sounds
+
+### Technical Features:
+- **Procedural Audio**: All sounds generated using Web Audio API oscillators
+- **Dynamic Frequency**: Different teams have unique frequency signatures
+- **Audio Context Management**: Proper audio context handling and cleanup
+- **Performance Optimized**: Throttled sound triggers to prevent audio spam
+
+## 🛠️ Technology Stack
 
 - **React 18**: Modern React with hooks for state management
 - **Three.js**: 3D graphics and physics
 - **React Three Fiber**: React renderer for Three.js
 - **React Three Drei**: Useful helpers and components
+- **Web Audio API**: Advanced procedural audio generation
 - **Vite**: Fast development build tool
 
-## Getting Started
+## 🚀 Getting Started
 
 1. **Install Dependencies**:
    ```bash

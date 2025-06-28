@@ -2,6 +2,8 @@ import React, { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Text, Box, Cylinder, Sphere } from '@react-three/drei'
 import * as THREE from 'three'
+import AudioReactiveChicken from './AudioReactiveChicken'
+import SoundParticles from './SoundParticles'
 
 const Chicken = ({ position, color, isLeft, ropePosition, winner, isGameActive }) => {
   const meshRef = useRef()
@@ -638,7 +640,7 @@ const Ground = () => {
   )
 }
 
-const TugOfWarScene = ({ ropePosition, winner, isGameActive }) => {
+const TugOfWarScene = ({ ropePosition, winner, isGameActive, redStrength = 0, blueStrength = 0 }) => {
   // Calculate player positions based on rope position
   // Red team players move with the rope (negative direction)
   const redBasePosition = -6 + ropePosition * 0.3 // Players move less than the rope for realism
@@ -650,57 +652,77 @@ const TugOfWarScene = ({ ropePosition, winner, isGameActive }) => {
     <>
       <Ground />
       
-      {/* Red team chickens - positions adjust with rope */}
-      <Chicken 
-        position={[redBasePosition, 0, 1]} 
-        color="#ff4757" 
-        isLeft={true} 
+      {/* Sound Particles */}
+      <SoundParticles 
+        redStrength={redStrength}
+        blueStrength={blueStrength}
         ropePosition={ropePosition}
         winner={winner}
-        isGameActive={isGameActive}
-      />
-      <Chicken 
-        position={[redBasePosition - 1, 0, -1]} 
-        color="#ff4757" 
-        isLeft={true} 
-        ropePosition={ropePosition}
-        winner={winner}
-        isGameActive={isGameActive}
-      />
-      <Chicken 
-        position={[redBasePosition - 2, 0, 0]} 
-        color="#ff4757" 
-        isLeft={true} 
-        ropePosition={ropePosition}
-        winner={winner}
-        isGameActive={isGameActive}
       />
       
+      {/* Red team chickens - positions adjust with rope */}
+      <AudioReactiveChicken redStrength={redStrength} blueStrength={blueStrength} isRed={true}>
+        <Chicken 
+          position={[redBasePosition, 0, 1]} 
+          color="#ff4757" 
+          isLeft={true} 
+          ropePosition={ropePosition}
+          winner={winner}
+          isGameActive={isGameActive}
+        />
+      </AudioReactiveChicken>
+      <AudioReactiveChicken redStrength={redStrength} blueStrength={blueStrength} isRed={true}>
+        <Chicken 
+          position={[redBasePosition - 1, 0, -1]} 
+          color="#ff4757" 
+          isLeft={true} 
+          ropePosition={ropePosition}
+          winner={winner}
+          isGameActive={isGameActive}
+        />
+      </AudioReactiveChicken>
+      <AudioReactiveChicken redStrength={redStrength} blueStrength={blueStrength} isRed={true}>
+        <Chicken 
+          position={[redBasePosition - 2, 0, 0]} 
+          color="#ff4757" 
+          isLeft={true} 
+          ropePosition={ropePosition}
+          winner={winner}
+          isGameActive={isGameActive}
+        />
+      </AudioReactiveChicken>
+      
       {/* Blue team chickens - positions adjust with rope */}
-      <Chicken 
-        position={[blueBasePosition, 0, 1]} 
-        color="#3742fa" 
-        isLeft={false} 
-        ropePosition={ropePosition}
-        winner={winner}
-        isGameActive={isGameActive}
-      />
-      <Chicken 
-        position={[blueBasePosition + 1, 0, -1]} 
-        color="#3742fa" 
-        isLeft={false} 
-        ropePosition={ropePosition}
-        winner={winner}
-        isGameActive={isGameActive}
-      />
-      <Chicken 
-        position={[blueBasePosition + 2, 0, 0]} 
-        color="#3742fa" 
-        isLeft={false} 
-        ropePosition={ropePosition}
-        winner={winner}
-        isGameActive={isGameActive}
-      />
+      <AudioReactiveChicken redStrength={redStrength} blueStrength={blueStrength} isRed={false}>
+        <Chicken 
+          position={[blueBasePosition, 0, 1]} 
+          color="#3742fa" 
+          isLeft={false} 
+          ropePosition={ropePosition}
+          winner={winner}
+          isGameActive={isGameActive}
+        />
+      </AudioReactiveChicken>
+      <AudioReactiveChicken redStrength={redStrength} blueStrength={blueStrength} isRed={false}>
+        <Chicken 
+          position={[blueBasePosition + 1, 0, -1]} 
+          color="#3742fa" 
+          isLeft={false} 
+          ropePosition={ropePosition}
+          winner={winner}
+          isGameActive={isGameActive}
+        />
+      </AudioReactiveChicken>
+      <AudioReactiveChicken redStrength={redStrength} blueStrength={blueStrength} isRed={false}>
+        <Chicken 
+          position={[blueBasePosition + 2, 0, 0]} 
+          color="#3742fa" 
+          isLeft={false} 
+          ropePosition={ropePosition}
+          winner={winner}
+          isGameActive={isGameActive}
+        />
+      </AudioReactiveChicken>
       
       {/* Rope */}
       <Rope ropePosition={ropePosition} />
