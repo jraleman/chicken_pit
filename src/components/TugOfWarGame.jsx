@@ -29,11 +29,11 @@ const TugOfWarGame = () => {
 
       const key = event.key.toLowerCase()
       
-      // Red team keys: Q, W, E
+      // Red chickens keys: Q, W, E
       if (key === 'q' || key === 'w' || key === 'e') {
         handleRedPull()
       }
-      // Blue team keys: I, O, P
+      // Blue chickens keys: I, O, P
       else if (key === 'i' || key === 'o' || key === 'p') {
         handleBluePull()
       }
@@ -58,10 +58,10 @@ const TugOfWarGame = () => {
 
     // Check for winner
     if (clampedPosition <= -10.5) {
-      setWinner('Red Team')
+      setWinner('Red Chickens')
       setIsGameActive(false)
     } else if (clampedPosition >= 10.5) {
-      setWinner('Blue Team')
+      setWinner('Blue Chickens')
       setIsGameActive(false)
     }
   }, [redStrength, blueStrength, ropePosition, isGameActive])
@@ -85,9 +85,9 @@ const TugOfWarGame = () => {
   }
 
   const getPositionText = () => {
-    if (ropePosition < -2) return "Red Team Advantage!"
-    if (ropePosition > 2) return "Blue Team Advantage!"
-    return "Even Match!"
+    if (ropePosition < -2) return "Red Chickens Advantage! 🐔💪"
+    if (ropePosition > 2) return "Blue Chickens Advantage! 🐔💪"
+    return "Even Match! 🐔⚖️🐔"
   }
 
   return (
@@ -98,7 +98,11 @@ const TugOfWarGame = () => {
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
-        <TugOfWarScene ropePosition={ropePosition} />
+        <TugOfWarScene 
+          ropePosition={ropePosition} 
+          winner={winner} 
+          isGameActive={isGameActive} 
+        />
         <OrbitControls
           enablePan={false}
           enableZoom={true}
@@ -115,9 +119,31 @@ const TugOfWarGame = () => {
           <div className="game-status">{getPositionText()}</div>
         </div>
 
+        <div className="info-panel">
+          <h4>📊 Game Stats</h4>
+          <div className="info-item">
+            <span>Red Power:</span>
+            <span>{redStrength.toFixed(0)}</span>
+          </div>
+          <div className="info-item">
+            <span>Blue Power:</span>
+            <span>{blueStrength.toFixed(0)}</span>
+          </div>
+          <div className="info-item">
+            <span>Rope Pos:</span>
+            <span>{ropePosition.toFixed(1)}</span>
+          </div>
+          <div className="info-item">
+            <span>Status:</span>
+            <span style={{ color: isGameActive ? '#4caf50' : '#f44336' }}>
+              {isGameActive ? 'Active' : 'Paused'}
+            </span>
+          </div>
+        </div>
+
         <div className="controls">
           <div className="team-controls team-red">
-            <div className="team-name">🔴 Red Team</div>
+            <div className="team-name">� Red Chickens</div>
             <button className="pull-button" onClick={handleRedPull} disabled={!isGameActive}>
               Pull!
             </button>
@@ -128,20 +154,20 @@ const TugOfWarGame = () => {
                 style={{ width: `${redStrength}%` }}
               />
             </div>
-            <div>Strength: {redStrength}</div>
+            <div style={{ fontSize: '0.8rem' }}>Power: {redStrength.toFixed(0)}</div>
           </div>
 
           <div className="center-indicator">
             <div className="rope-position">
-              Rope Position: {ropePosition.toFixed(1)}
+              Center: {ropePosition.toFixed(1)}
             </div>
             <button className="reset-button" onClick={resetGame}>
-              Reset Game
+              Reset
             </button>
           </div>
 
           <div className="team-controls team-blue">
-            <div className="team-name">🔵 Blue Team</div>
+            <div className="team-name">� Blue Chickens</div>
             <button className="pull-button" onClick={handleBluePull} disabled={!isGameActive}>
               Pull!
             </button>
@@ -152,14 +178,14 @@ const TugOfWarGame = () => {
                 style={{ width: `${blueStrength}%` }}
               />
             </div>
-            <div>Strength: {blueStrength}</div>
+            <div style={{ fontSize: '0.8rem' }}>Power: {blueStrength.toFixed(0)}</div>
           </div>
         </div>
       </div>
 
       {winner && (
         <div className="winner-announcement">
-          🎉 {winner} Wins! 🎉
+          🎉 {winner.replace('Team', 'Chickens')} Win! 🐔👑 🎉
         </div>
       )}
     </>

@@ -13,72 +13,99 @@
   top: 0;
   left: 0;
   width: 100%;
+  height: 100%;
   z-index: 100;
-  padding: 20px;
+  pointer-events: none;
   color: white;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+
+.game-ui * {
+  pointer-events: auto;
 }
 
 .game-header {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   text-align: center;
-  margin-bottom: 20px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px 20px;
+  border-radius: 15px;
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255,255,255,0.2);
 }
 
 .game-title {
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
   margin: 0;
   text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
 }
 
 .game-status {
-  font-size: 1.2rem;
-  margin: 10px 0;
+  font-size: 1rem;
+  margin: 5px 0 0 0;
 }
 
 .controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 0 20px;
+  align-items: flex-end;
+  padding: 20px;
 }
 
 .team-controls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  background: rgba(0,0,0,0.7);
+  padding: 15px;
+  border-radius: 15px;
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255,255,255,0.2);
+  min-width: 180px;
 }
 
 .team-name {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .pull-button {
-  padding: 15px 30px;
-  font-size: 1.2rem;
+  padding: 12px 24px;
+  font-size: 1rem;
   font-weight: bold;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
 }
 
 .pull-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.5);
 }
 
 .pull-button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.pull-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .team-red .pull-button {
@@ -92,20 +119,20 @@
 }
 
 .keyboard-controls {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: bold;
   margin: 5px 0;
-  padding: 5px 10px;
+  padding: 4px 8px;
   background: rgba(255,255,255,0.2);
   border-radius: 5px;
   border: 1px solid rgba(255,255,255,0.3);
 }
 
 .strength-meter {
-  width: 150px;
-  height: 20px;
+  width: 120px;
+  height: 15px;
   background: rgba(255,255,255,0.2);
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   border: 2px solid rgba(255,255,255,0.3);
 }
@@ -128,32 +155,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px 15px;
+  border-radius: 15px;
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255,255,255,0.2);
 }
 
 .rope-position {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: bold;
 }
 
 .reset-button {
-  padding: 10px 20px;
-  font-size: 1rem;
+  padding: 8px 16px;
+  font-size: 0.9rem;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: linear-gradient(135deg, #ffa726, #ff9800);
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
 
 .reset-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.5);
 }
 
 .winner-announcement {
@@ -176,4 +208,98 @@
   0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
   50% { transform: translate(-50%, -50%) scale(1.1); }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+/* Info panel for additional game stats */
+.info-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px 15px;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  border: 2px solid rgba(255,255,255,0.2);
+  font-size: 0.8rem;
+  min-width: 150px;
+}
+
+.info-panel h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9rem;
+  color: #ffa726;
+  text-align: center;
+}
+
+.info-panel .info-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 4px 0;
+  padding: 2px 0;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .game-title {
+    font-size: 1.4rem;
+  }
+  
+  .team-controls {
+    min-width: 140px;
+    padding: 10px;
+  }
+  
+  .team-name {
+    font-size: 1rem;
+  }
+  
+  .pull-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .strength-meter {
+    width: 100px;
+    height: 12px;
+  }
+  
+  .info-panel {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+    min-width: 120px;
+  }
+  
+  .controls {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-header {
+    top: 10px;
+    padding: 8px 15px;
+  }
+  
+  .game-title {
+    font-size: 1.2rem;
+  }
+  
+  .game-status {
+    font-size: 0.9rem;
+  }
+  
+  .team-controls {
+    min-width: 120px;
+    padding: 8px;
+  }
+  
+  .controls {
+    padding: 10px;
+  }
+  
+  .info-panel {
+    display: none; /* Hide on very small screens */
+  }
 }
