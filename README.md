@@ -4,9 +4,13 @@ A fun and interactive Tug-O-War game built with React and Three.js with amazing 
 
 ## 🎮 Features
 
+- **🏠 Main Menu**: Beautiful 3D main menu with running chickens in the background
+- **🎯 Game Modes**: Choose between Single Player (vs AI) and Multiplayer modes
+- **🐔 Team Selection**: Pick your favorite chicken team (Red or Blue) in single player
 - **3D Graphics**: Beautiful 3D rendered game using Three.js and React Three Fiber
 - **Real-time Gameplay**: Interactive tug-of-war mechanics with strength meters
 - **Team Competition**: Red Team vs Blue Team competition
+- **🤖 AI Opponents**: Smart AI chickens that adapt their strategy in single player mode
 - **Dynamic Physics**: Rope moves based on team strength difference
 - **Visual Feedback**: Strength meters, position indicators, and winner announcements
 - **Responsive Controls**: Click buttons or use keyboard controls to pull the rope
@@ -53,12 +57,27 @@ A fun and interactive Tug-O-War game built with React and Three.js with amazing 
 
 ## How to Play
 
+### 🏠 Main Menu
+1. **Launch the game** to see the animated main menu with running chickens
+2. **Choose Game Mode**:
+   - **Single Player**: Play against smart AI chickens
+   - **Multiplayer**: Play with friends locally
+3. **Select Your Team** (Single Player only): Pick Red or Blue chickens
+4. **Start Playing**: Jump into the tug-of-war action!
+
+### 🎮 In-Game Controls
 1. **Red Team**: Click the "Pull!" button on the left or use keyboard keys (Q, W, E)
 2. **Blue Team**: Click the "Pull!" button on the right or use keyboard keys (I, O, P)
 3. **Objective**: Pull the rope to your side! Get the rope past your goal line to win
 4. **Strategy**: Strength decays over time, so timing and coordination matter
 5. **Reset**: Use the "Reset Game" button to start a new match
-6. **Audio**: Use the volume control in the top-right to adjust sound levels
+6. **Main Menu**: Return to the main menu anytime with the "Main Menu" button
+7. **Audio**: Use the volume control in the top-right to adjust sound levels
+
+### 🤖 Single Player Mode
+- **AI Behavior**: AI chickens adapt their pulling strategy based on the game state
+- **Difficulty**: AI becomes more aggressive when losing and more defensive when winning
+- **Team Control**: You can only control your selected team; the AI handles the other team
 
 ## 🎮 Game Mechanics
 
