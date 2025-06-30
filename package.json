@@ -2,23 +2,27 @@
   "name": "chicken-pit-tug-of-war",
   "version": "1.0.0",
   "description": "A Tug-O-War game built with React and Three.js",
+  "homepage": "https://jraleman.github.io/chicken-pit/",
   "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@react-three/drei": "^9.88.13",
+    "@react-three/fiber": "^8.15.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@react-three/fiber": "^8.15.11",
-    "@react-three/drei": "^9.88.13",
     "three": "^0.158.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
     "@vitejs/plugin-react": "^4.1.1",
+    "gh-pages": "^6.3.0",
     "vite": "^5.0.0"
   }
 }

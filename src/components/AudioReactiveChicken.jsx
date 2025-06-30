@@ -36,11 +36,11 @@ const AudioReactiveChicken = ({ children, redStrength, blueStrength, isRed }) =>
       groupRef.current.scale.setScalar(currentScale + (targetScale - currentScale) * 0.1)
     }
     
-    // Extra bounce when pulling
-    if (isPulling) {
-      const bounce = Math.sin(state.clock.elapsedTime * 30) * 0.2
-      groupRef.current.position.y = groupRef.current.position.y + bounce
-    }
+    // Extra bounce when pulling - REMOVED to keep chickens at ground level
+    // if (isPulling) {
+    //   const bounce = Math.sin(state.clock.elapsedTime * 30) * 0.2
+    //   groupRef.current.position.y = groupRef.current.position.y + bounce
+    // }
     
     // Strength-based glow effect (simulated with scale variations)
     const strengthGlow = 1 + (currentStrength / 100) * 0.15
