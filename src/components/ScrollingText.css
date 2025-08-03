@@ -1,0 +1,23 @@
+.scrolling-text-container {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.scrolling-text-content {
+  color: #fff;
+  font-size: 1.2rem;
+  text-align: center;
+  animation-name: scroll;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes scroll {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(-100%); }
+}
