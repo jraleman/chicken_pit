@@ -14,7 +14,7 @@ const Rope: React.FC<{
     }
   });
   return (
-    <mesh ref={ref}>
+    <mesh ref={ref} rotation={[0, 0, Math.PI / 2]}>
       <cylinderGeometry args={[0.05, 0.05, ropeLength, 12]} />
       <meshStandardMaterial color={color} />
     </mesh>

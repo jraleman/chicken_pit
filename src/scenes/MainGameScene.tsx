@@ -238,7 +238,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
 
   return (
     <div className={`scene main-game ${isMultiplayer ? 'multiplayer-mode' : ''}`}>
-      <Canvas camera={{ position: [0, 2, 5] }}>
+      <Canvas camera={{ position: [0, 2, 5]}}>
         <ambientLight intensity={0.5} />
         <directionalLight position={[5, 8, 5]} />
         

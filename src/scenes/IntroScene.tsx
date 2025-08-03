@@ -81,7 +81,7 @@ const IntroScene: React.FC<IntroSceneProps> = ({ onNext }) => {
           color: 'white',
           zIndex: 1001
         }}>
-          <h2 style={{ marginBottom: '20px' }}>Click to start the intro</h2>
+          {/* <h2 style={{ marginBottom: '20px' }}>Click to start the intro</h2> */}
           <button 
             onClick={handleStart}
             style={{
@@ -94,7 +94,7 @@ const IntroScene: React.FC<IntroSceneProps> = ({ onNext }) => {
               fontSize: '16px'
             }}
           >
-            Start Intro
+            Start Game!
           </button>
         </div>
       ) : (
