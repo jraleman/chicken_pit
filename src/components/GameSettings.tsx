@@ -6,7 +6,9 @@ export type GameSettingsData = {
   ropeColor: string;
   leftTeamColor: string;
   rightTeamColor: string;
-  gameMode: "singleplayer" | "multiplayer";
+  rightTeamLabel?: string;
+  leftTeamLabel?: string;
+  gameMode: string | "singleplayer" | "multiplayer";
 };
 
 interface GameSettingsProps {

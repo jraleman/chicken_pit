@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ScrollingText from '../components/ScrollingText';
 import { GAME_AUDIO_VOLUME, GAME_INTRO_DURATION, GAME_INTRO_TEXT } from '../contants';
-import introAudio from '../assets/audio/intro.ogg';
+import introAudio from '../assets/audio/intro.mp3';
 
 interface IntroSceneProps {
   onNext: () => void;

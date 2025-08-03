@@ -9,9 +9,11 @@ interface ChooseTeamProps {
 
 const ChooseTeam: React.FC<ChooseTeamProps> = ({ onSelectTeam }) => (
   <div className="choose-team">
-    <h2>Choose Your Team</h2>
-    <button onClick={() => onSelectTeam('left')}>{LEFT_TEAM_LABEL}</button>
-    <button onClick={() => onSelectTeam('right')}>{RIGHT_TEAM_LABEL}</button>
+    <h3>Choose Your Team</h3>
+    <div className="team-buttons">
+      <button onClick={() => onSelectTeam('left')}>{LEFT_TEAM_LABEL}</button>
+      <button onClick={() => onSelectTeam('right')}>{RIGHT_TEAM_LABEL}</button>
+    </div>
   </div>
 );
 

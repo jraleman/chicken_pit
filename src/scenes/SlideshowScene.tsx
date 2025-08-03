@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { SLIDE_SHOW_DURATION } from "../contants";
+import logo from "../assets/images/dcs-games.jpg";
 
 interface SlideShowSceneProps {
   onNext: () => void;
@@ -23,7 +24,9 @@ const SlideShowScene: React.FC<SlideShowSceneProps> = ({ onNext }) => {
       id: 1,
       title: "DeskCanSaw",
       subtitle: "Games",
-      backgroundColor: "#2c3e50",
+      backgroundColor: "#afddea",
+      // logoUrl: "/assets/images/dcs-games.jpg",
+      logoUrl: logo,
     },
   ];
 
@@ -62,8 +65,8 @@ const SlideShowScene: React.FC<SlideShowSceneProps> = ({ onNext }) => {
     <div
       className="scene slideshow"
       style={{
-        backgroundColor: currentSlideData.backgroundColor,
         transition: `background-color ${fadeDuration}ms ease-in-out`,
+        backgroundColor: currentSlideData.backgroundColor,
       }}
     >
       <div
@@ -73,33 +76,16 @@ const SlideShowScene: React.FC<SlideShowSceneProps> = ({ onNext }) => {
           transition: `opacity ${fadeDuration}ms ease-in-out`,
         }}
       >
-        {currentSlideData.logoUrl ? (
-          <img
-            src={currentSlideData.logoUrl}
-            alt={currentSlideData.title}
-            className="team-logo"
-          />
-        ) : (
-          <div className="logo-placeholder">
-            <div className="logo-icon">🏢</div>
-          </div>
-        )}
-
-        <h1 className="slide-title">{currentSlideData.title}</h1>
-        {currentSlideData.subtitle && (
-          <h2 className="slide-subtitle">{currentSlideData.subtitle}</h2>
-        )}
-
-        <div className="slide-indicator">
-          {slides.map((_, index) => (
-            <div
-              key={index}
-              className={`indicator-dot ${
-                index === currentSlide ? "active" : ""
-              }`}
-            />
-          ))}
-        </div>
+        <img
+          src={currentSlideData.logoUrl}
+          alt={currentSlideData.title}
+          className="team-logo"
+          style={{
+            width: 200,
+            height: "auto",
+            transition: `opacity ${fadeDuration}ms ease-in-out`,
+          }}
+        />
       </div>
     </div>
   );

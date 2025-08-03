@@ -1,4 +1,52 @@
-/* Basic styling for the game */
+/* Modern game styling with warm chicken-themed colors */
+:root {
+  --primary-orange: #ff6b35;
+  --secondary-yellow: #f7931e;
+  --accent-red: #dc2626;
+  --warm-cream: #fef7ed;
+  --dark-brown: #451a03;
+  --medium-brown: #92400e;
+  --light-brown: #d97706;
+  --text-dark: #1f2937;
+  --text-light: #f9fafb;
+  --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-large: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --gradient-warm: linear-gradient(135deg, var(--primary-orange), var(--secondary-yellow));
+  --gradient-sunset: linear-gradient(135deg, #ff6b35, #f7931e, #dc2626);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 50%, #fdba74 100%);
+  min-height: 100vh;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes glow {
+  0%, 100% { 
+    box-shadow: var(--shadow-large);
+    transform: scale(1);
+  }
+  50% { 
+    box-shadow: var(--shadow-large), 0 0 30px rgba(255, 107, 53, 0.3);
+    transform: scale(1.01);
+  }
+}
+
 .scene {
   display: flex;
   flex-direction: column;
@@ -6,77 +54,262 @@
   justify-content: center;
   min-height: 100vh;
   padding: 20px;
+  background: var(--gradient-warm);
+  background-attachment: fixed;
+  position: relative;
+  overflow: hidden;
+}
+
+.slideshow {
+  background: #afddea !important;
+}
+
+.scene::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.scene > * {
+  position: relative;
+  z-index: 1;
 }
 
 .main-menu {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: var(--shadow-large);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  max-width: 500px;
+  width: 100%;
+  animation: glow 4s ease-in-out infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-menu::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(from 0deg, transparent, rgba(255, 107, 53, 0.03), transparent);
+  animation: rotate 10s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.main-menu h1 {
+  font-family: 'Fredoka One', cursive;
+  color: var(--primary-orange);
+  font-size: 3.5rem;
+  font-weight: 400;
+  margin-bottom: 30px;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.2);
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: bounce 2s ease-in-out infinite;
   text-align: center;
 }
 
 .game-settings {
   margin: 20px 0;
-  padding: 20px;
-  border: 2px solid #333;
-  border-radius: 8px;
-  background: #f9f9f9;
+  padding: 25px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
   max-width: 400px;
+  box-shadow: var(--shadow-medium);
+  border: 1px solid rgba(255, 107, 53, 0.1);
 }
 
 .game-settings label {
-  font-weight: bold;
-  margin-bottom: 5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-dark);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .game-settings input,
 .game-settings select {
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
   font-size: 16px;
+  transition: all 0.3s ease;
+  background: white;
+  color: var(--text-dark);
+  font-family: inherit;
+}
+
+.game-settings input:hover,
+.game-settings select:hover {
+  border-color: #ff6b35;
+  background: #fef7ed;
+}
+
+.game-settings input:focus,
+.game-settings select:focus {
+  outline: none;
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+  transform: translateY(-2px);
+  background: white;
 }
 
 .game-settings button {
-  padding: 12px 24px;
-  background: #007bff;
+  padding: 16px 24px;
+  background: var(--gradient-warm);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
   margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .game-settings button:hover {
-  background: #0056b3;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+  background: linear-gradient(135deg, #e55a2b, #de831a);
 }
 
 .choose-team {
-  margin: 20px 0;
+  margin: 25px 0;
+  padding: 20px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  border-radius: 16px;
+  box-shadow: var(--shadow-soft);
+}
+
+.choose-team h3 {
+  color: var(--text-dark);
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 14px;
+}
+
+.team-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
 .choose-team button {
-  margin: 0 10px;
-  padding: 12px 24px;
+  margin: 0;
+  padding: 16px 32px;
   font-size: 16px;
+  font-weight: 600;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+  min-width: 140px;
+}
+
+.choose-team button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.choose-team button:hover::before {
+  left: 100%;
 }
 
 .choose-team button:first-child {
-  background: #3b5998;
+  background: linear-gradient(135deg, #3b82e6, #1d4ed8);
   color: white;
 }
 
 .choose-team button:last-child {
-  background: #ea4335;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
 }
 
 .choose-team button:hover {
-  opacity: 0.8;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+}
+
+.choose-team button:active {
+  transform: translateY(-1px);
+}
+
+.main-menu > button {
+  padding: 18px 40px;
+  background: var(--gradient-sunset);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-medium);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.main-menu > button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.main-menu > button:hover::before {
+  left: 100%;
+}
+
+.main-menu > button:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-large);
 }
 
 .instructions {
@@ -84,18 +317,23 @@
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(30, 30, 30, 0.95);
+  backdrop-filter: blur(10px);
   color: white;
-  padding: 15px 25px;
-  border-radius: 8px;
+  padding: 20px 30px;
+  border-radius: 16px;
   text-align: center;
   font-size: 18px;
   z-index: 100;
+  box-shadow: var(--shadow-large);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  max-width: 600px;
 }
 
 .instructions p {
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 .game-dialog {
@@ -105,45 +343,144 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .dialog-content {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
+  background: linear-gradient(145deg, #ffffff, #f8fafc);
+  padding: 40px;
+  border-radius: 20px;
   text-align: center;
-  min-width: 300px;
+  min-width: 350px;
+  box-shadow: var(--shadow-large);
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { 
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to { 
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .dialog-content p {
-  font-size: 24px;
-  margin-bottom: 20px;
-  font-weight: bold;
+  font-size: 28px;
+  margin-bottom: 30px;
+  font-weight: 700;
+  color: var(--text-dark);
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .dialog-content button {
-  padding: 12px 30px;
+  padding: 16px 40px;
   font-size: 18px;
-  background: #007bff;
+  font-weight: 600;
+  background: var(--gradient-warm);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .dialog-content button:hover {
-  background: #0056b3;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-medium);
+  background: linear-gradient(135deg, #e55a2b, #de831a);
 }
 
 /* Multiplayer mode highlights */
 .multiplayer-mode .instructions {
-  background: linear-gradient(45deg, #3b5998, #ea4335);
+  background: linear-gradient(135deg, rgba(59, 89, 152, 0.95), rgba(234, 67, 53, 0.95));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .multiplayer-mode .instructions strong {
-  color: #ffff00;
+  color: var(--secondary-yellow);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .scene {
+    padding: 15px;
+  }
+  
+  .main-menu {
+    padding: 30px 20px;
+    margin: 10px;
+  }
+  
+  .main-menu h1 {
+    font-size: 2.8rem;
+  }
+  
+  .game-settings {
+    max-width: 100%;
+    padding: 20px;
+  }
+  
+  .choose-team button {
+    margin: 8px;
+    padding: 14px 24px;
+    font-size: 14px;
+    min-width: 120px;
+  }
+  
+  .team-buttons {
+    gap: 12px;
+  }
+  
+  .instructions {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    transform: none;
+    font-size: 16px;
+    padding: 15px 20px;
+  }
+  
+  .dialog-content {
+    margin: 20px;
+    min-width: auto;
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-menu h1 {
+    font-size: 2.2rem;
+  }
+  
+  .team-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .choose-team button {
+    margin: 8px auto;
+    width: 200px;
+  }
 }
