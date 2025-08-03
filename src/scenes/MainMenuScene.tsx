@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import ChooseTeam, { type Team } from '../components/ChooseTeam';
 import GameSettings, { type GameSettingsData } from '../components/GameSettings';
+import { GAME_TITLE } from '../contants';
 
 interface MainMenuSceneProps {
   onStartGame: (team: Team, settings: GameSettingsData) => void;
 }
 
-/**
- * Third scene: pick your side and settings, then hit “Play!”
- */
 const MainMenuScene: React.FC<MainMenuSceneProps> = ({ onStartGame }) => {
   const [team, setTeam] = useState<Team | null>(null);
   const [settings, setSettings] = useState<GameSettingsData | null>(null);
 
   const handlePlay = () => {
-    if (team && settings) {
-      onStartGame(team, settings);
+    if (settings && (settings.gameMode === 'multiplayer' || team)) {
+      // In multiplayer mode, team selection is not needed, so we can use 'left' as default
+      const selectedTeam = settings.gameMode === 'multiplayer' ? 'left' : team!;
+      onStartGame(selectedTeam, settings);
     } else {
       alert('Please select a team and set your options.');
     }
@@ -23,9 +23,11 @@ const MainMenuScene: React.FC<MainMenuSceneProps> = ({ onStartGame }) => {
 
   return (
     <div className="scene main-menu">
-      <h1>3D Tug-O-War</h1>
-      <ChooseTeam onSelectTeam={setTeam} />
+      <h1>{GAME_TITLE}</h1>
       <GameSettings onStart={setSettings} />
+      {settings && settings.gameMode === 'singleplayer' && (
+        <ChooseTeam onSelectTeam={setTeam} />
+      )}
       <button onClick={handlePlay}>Play!</button>
     </div>
   );

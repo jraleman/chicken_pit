@@ -5,9 +5,6 @@ interface GameDialogProps {
   onClose: () => void;
 }
 
-/**
- * Simple modal dialog for win/lose messages.
- */
 const GameDialog: React.FC<GameDialogProps> = ({ message, onClose }) => (
   <div className="game-dialog">
     <div className="dialog-content">

@@ -3,26 +3,30 @@ import './ScrollingText.css';
 
 interface ScrollingTextProps {
   text: string;
-  duration?: number; // seconds
+  duration: number; // seconds
   onEnd?: () => void;
+  onStart?: () => void;
 }
 
-/**
- * Full-screen vertically scrolling text (like a movie crawl).
- */
 const ScrollingText: React.FC<ScrollingTextProps> = ({
   text,
-  duration = 8,
+  duration,
   onEnd,
+  onStart,
 }) => {
   const container = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Call onStart immediately when component mounts
+    if (onStart) {
+      onStart();
+    }
+
     if (onEnd) {
       const id = setTimeout(onEnd, duration * 1000);
       return () => clearTimeout(id);
     }
-  }, [duration, onEnd]);
+  }, [duration, onEnd, onStart]);
 
   return (
     <div ref={container} className="scrolling-text-container">

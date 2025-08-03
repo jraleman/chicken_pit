@@ -1,39 +1,108 @@
-import React from 'react';
-import ScrollingText from '../components/ScrollingText';
+import { useEffect, useState } from "react";
+import { SLIDE_SHOW_DURATION } from "../contants";
 
-interface SlideshowSceneProps {
+interface SlideShowSceneProps {
   onNext: () => void;
 }
 
-/**
- * First scene: scroll some intro text, then advance.
- */
-const SlideshowScene: React.FC<SlideshowSceneProps> = ({ onNext }) => {
-  const intro = `
-The humid dawn air in Athens, Georgia,
-trembled as the ER Nurse stepped onto the chicken-processing farm, 
-stethoscope swinging by her side. 
-
-Called for a patient in distress, 
-she leaned over the edge of the vast chicken pit—and slipped. 
-
-Feathers and clucks swirled as she sank into the cool muck, 
-hidden from sight for hours. 
-
-When rescuers at last hauled her out, 
-she was rushed back to the very ER she served.
-
-In her fevered haze, two figures emerged: 
-the Blue Chicken, calm and guiding, 
-and the Red Chicken, frantic and insistent. 
-
-Blue whispered, “Breathe, steady your heart.” 
-Red crowed, “Act now, shove through!” 
-
-Instantly, the walls of her breakdown peeled away—she was free of the pit.
-`;
-
-  return <ScrollingText text={intro} duration={8} onEnd={onNext} />;
+export type Slide = {
+  id: number;
+  title: string;
+  subtitle?: string;
+  logoUrl?: string;
+  backgroundColor: string;
 };
 
-export default SlideshowScene;
+const SlideShowScene: React.FC<SlideShowSceneProps> = ({ onNext }) => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  // Slideshow content - can be easily updated with actual team logos
+  const slides: Slide[] = [
+    {
+      id: 1,
+      title: "DeskCanSaw",
+      subtitle: "Games",
+      backgroundColor: "#2c3e50",
+    },
+  ];
+
+  const slideDuration = SLIDE_SHOW_DURATION / slides.length;
+  const fadeDuration = 666;
+
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+      setIsVisible(false);
+
+      setTimeout(() => {
+        setCurrentSlide((prev) => {
+          const nextSlide = prev + 1;
+          if (nextSlide >= slides.length) {
+            onNext();
+            return prev;
+          }
+          return nextSlide;
+        });
+        setIsVisible(true);
+      }, fadeDuration);
+    }, slideDuration);
+
+    return () => clearInterval(slideInterval);
+  }, [onNext, slides.length, slideDuration, fadeDuration]);
+
+  // Cleanup timeout when component unmounts
+  useEffect(() => {
+    const totalDuration = setTimeout(onNext, SLIDE_SHOW_DURATION);
+    return () => clearTimeout(totalDuration);
+  }, [onNext]);
+
+  const currentSlideData = slides[currentSlide];
+
+  return (
+    <div
+      className="scene slideshow"
+      style={{
+        backgroundColor: currentSlideData.backgroundColor,
+        transition: `background-color ${fadeDuration}ms ease-in-out`,
+      }}
+    >
+      <div
+        className="slide-content"
+        style={{
+          opacity: isVisible ? 1 : 0,
+          transition: `opacity ${fadeDuration}ms ease-in-out`,
+        }}
+      >
+        {currentSlideData.logoUrl ? (
+          <img
+            src={currentSlideData.logoUrl}
+            alt={currentSlideData.title}
+            className="team-logo"
+          />
+        ) : (
+          <div className="logo-placeholder">
+            <div className="logo-icon">🏢</div>
+          </div>
+        )}
+
+        <h1 className="slide-title">{currentSlideData.title}</h1>
+        {currentSlideData.subtitle && (
+          <h2 className="slide-subtitle">{currentSlideData.subtitle}</h2>
+        )}
+
+        <div className="slide-indicator">
+          {slides.map((_, index) => (
+            <div
+              key={index}
+              className={`indicator-dot ${
+                index === currentSlide ? "active" : ""
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SlideShowScene;
