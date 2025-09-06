@@ -14,7 +14,7 @@ const BarnModel: React.FC<BarnProps> = ({
   rotation = [0, 0, 0]
 }) => {
   // Load the barn OBJ model
-  const obj = useLoader(OBJLoader, '/assets/3d/barn.obj');
+  const obj = useLoader(OBJLoader, './assets/3d/barn.obj');
   
   // Clone the geometry to avoid issues with multiple instances
   const clonedObj = obj.clone();

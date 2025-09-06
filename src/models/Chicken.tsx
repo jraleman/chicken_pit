@@ -15,7 +15,7 @@ const ChickenModel: React.FC<ChickenProps> = ({ position, team, isPulling = fals
   const chickenRef = useRef<Mesh>(null);
   
   // Load the chicken OBJ model
-  const obj = useLoader(OBJLoader, '/assets/3d/chicken.obj');
+  const obj = useLoader(OBJLoader, './assets/3d/chicken.obj');
   
   // Clone the geometry to avoid issues with multiple instances
   const clonedObj = obj.clone();

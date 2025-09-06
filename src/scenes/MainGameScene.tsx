@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import GameDialog from '../components/GameDialog';
 import { type GameSettingsData } from '../components/GameSettings';
-import { LEFT_TEAM_CONTROLS, RIGHT_TEAM_CONTROLS, MULTIPLAYER_LEFT_LABEL, MULTIPLAYER_RIGHT_LABEL, LEFT_TEAM_LABEL, RIGHT_TEAM_LABEL } from '../contants';
+import { LEFT_TEAM_CONTROLS, RIGHT_TEAM_CONTROLS, MULTIPLAYER_LEFT_LABEL, MULTIPLAYER_RIGHT_LABEL, LEFT_TEAM_LABEL, RIGHT_TEAM_LABEL, GAME_WINS_NEEDED } from '../contants';
 import Post from '../models/Post';
 import Rope from '../models/Rope';
 import Chicken from '../models/Chicken';
@@ -29,7 +29,6 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
   const [overallWinner, setOverallWinner] = useState<string | null>(null);
   const limit = settings.ropeLength / 2;
   const isMultiplayer = settings.gameMode === 'multiplayer';
-  const WINS_NEEDED = 5;
   
   // Camera rotation limits (in radians)
   const MAX_CAMERA_ROTATION = Math.PI / 3; // 60 degrees
@@ -167,7 +166,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         const newLeftWins = leftWins + 1;
         setLeftWins(newLeftWins);
         
-        if (newLeftWins >= WINS_NEEDED) {
+        if (newLeftWins >= GAME_WINS_NEEDED) {
           setOverallWinner(LEFT_TEAM_LABEL);
         } else {
           // Restart round after a short delay
@@ -180,7 +179,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         if (playerWon) {
           const newLeftWins = leftWins + 1;
           setLeftWins(newLeftWins);
-          if (newLeftWins >= WINS_NEEDED) {
+          if (newLeftWins >= GAME_WINS_NEEDED) {
             setOverallWinner('You');
           } else {
             setTimeout(restartRound, 1500);
@@ -188,7 +187,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         } else {
           const newRightWins = rightWins + 1;
           setRightWins(newRightWins);
-          if (newRightWins >= WINS_NEEDED) {
+          if (newRightWins >= GAME_WINS_NEEDED) {
             setOverallWinner('CPU');
           } else {
             setTimeout(restartRound, 1500);
@@ -203,7 +202,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         const newRightWins = rightWins + 1;
         setRightWins(newRightWins);
         
-        if (newRightWins >= WINS_NEEDED) {
+        if (newRightWins >= GAME_WINS_NEEDED) {
           setOverallWinner(RIGHT_TEAM_LABEL);
         } else {
           // Restart round after a short delay
@@ -216,7 +215,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         if (playerWon) {
           const newRightWins = rightWins + 1;
           setRightWins(newRightWins);
-          if (newRightWins >= WINS_NEEDED) {
+          if (newRightWins >= GAME_WINS_NEEDED) {
             setOverallWinner('You');
           } else {
             setTimeout(restartRound, 1500);
@@ -224,7 +223,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         } else {
           const newLeftWins = leftWins + 1;
           setLeftWins(newLeftWins);
-          if (newLeftWins >= WINS_NEEDED) {
+          if (newLeftWins >= GAME_WINS_NEEDED) {
             setOverallWinner('CPU');
           } else {
             setTimeout(restartRound, 1500);
@@ -232,7 +231,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         }
       }
     }
-  }, [ropePos, team, limit, isMultiplayer, winner, overallWinner, leftWins, rightWins, WINS_NEEDED, restartRound]);
+  }, [ropePos, team, limit, isMultiplayer, winner, overallWinner, leftWins, rightWins, GAME_WINS_NEEDED, restartRound]);
 
   const showScoreDisplay = false;
 
@@ -292,7 +291,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
             <span>You: {team === 'left' ? leftWins : rightWins} | CPU: {team === 'left' ? rightWins : leftWins}</span>
           )}
           <div style={{ fontSize: '0.8em', opacity: 0.8, textAlign: 'center' }}>
-            First to {WINS_NEEDED} wins!
+            First to {GAME_WINS_NEEDED} wins!
           </div>
         </div>
       )}
@@ -332,7 +331,7 @@ const MainGameScene: React.FC<MainGameSceneProps> = ({
         </div>
       ) : overallWinner ? (
         <GameDialog
-          message={`${overallWinner} won! They are the ${WINS_NEEDED} rounds champion!`}
+          message={`${overallWinner} won! They are the ${GAME_WINS_NEEDED} rounds champion!`}
           onClose={onRestart}
         />
       ) : null}
