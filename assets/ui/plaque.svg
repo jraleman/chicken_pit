@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160">
+  <!-- A slab of the barn wall from pit/scenery.gd: six vertical boards, a
+       ledger rail top and bottom, and iron bolts at the corners. Painted in
+       greys so main_menu.gd's plaque_color supplies the barn red.
+
+       Deliberately a midtone texture, 0.16-0.55, not a near-white one. The
+       menu lights the plaque with a 1.5 key and a 4.0 omni fill, so a bright
+       texture drives the red channel past 1.0 and the whole face clips to a
+       flat orange no albedo tint can pull back. Held down here, the product
+       stays in range and the boards read as barn red with their grain. -->
+  <rect width="160" height="160" fill="#7d7d7d"/>
+  <g fill="#6f6f6f">
+    <rect x="26.7" width="26.7" height="160"/>
+    <rect x="80" width="26.7" height="160"/>
+    <rect x="133.3" width="26.7" height="160"/>
+  </g>
+  <g stroke="#333333" stroke-width="2.4">
+    <path d="M26.7 0v160M53.3 0v160M80 0v160M106.7 0v160M133.3 0v160"/>
+  </g>
+  <g stroke="#8b8b8b" stroke-width="1.2">
+    <path d="M28.6 0v160M55.2 0v160M81.9 0v160M108.6 0v160M135.2 0v160"/>
+  </g>
+  <g fill="none" stroke="#565656" stroke-width="1.3" opacity=".8">
+    <path d="M8 0q4 40 0 76t3 84M18 0q-3 52 2 90t-2 70"/>
+    <path d="M62 0q5 34-1 70t2 90M71 0q-2 44 3 82t-3 78"/>
+    <path d="M115 0q-4 46 2 84t-2 76M124 0q3 38-2 74t1 86"/>
+    <ellipse cx="40" cy="54" rx="6" ry="14"/>
+    <ellipse cx="40" cy="54" rx="2.5" ry="6"/>
+    <ellipse cx="94" cy="118" rx="5" ry="12"/>
+  </g>
+  <g fill="#5b5b5b">
+    <rect y="9" width="160" height="15"/>
+    <rect y="136" width="160" height="15"/>
+  </g>
+  <g stroke="#8b8b8b" stroke-width="1.6">
+    <path d="M0 9.8h160M0 136.8h160"/>
+  </g>
+  <g stroke="#2b2b2b" stroke-width="1.8">
+    <path d="M0 23.4h160M0 150.4h160"/>
+  </g>
+  <g fill="#292929" stroke="#828282" stroke-width="1.3">
+    <circle cx="11" cy="16.5" r="4.2"/><circle cx="149" cy="16.5" r="4.2"/>
+    <circle cx="11" cy="143.5" r="4.2"/><circle cx="149" cy="143.5" r="4.2"/>
+  </g>
+</svg>

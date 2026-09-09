@@ -1,0 +1,70 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://games/chicken_pit/pit/pit_view.gd" id="1_view"]
+[ext_resource type="Script" path="res://games/chicken_pit/pit/pit_camera.gd" id="2_camera"]
+[ext_resource type="Script" path="res://games/chicken_pit/pit/rope_view.gd" id="3_rope"]
+[ext_resource type="Script" path="res://games/chicken_pit/pit/pit_lighting.gd" id="4_lighting"]
+[ext_resource type="Shader" path="res://games/chicken_pit/pit/sunset_sky.gdshader" id="5_sky"]
+
+[sub_resource type="Environment" id="Environment"]
+resource_local_to_scene = true
+background_mode = 1
+background_color = Color(1, 0.823529, 0.623529, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.72549, 0.788235, 0.894118, 1)
+ambient_light_energy = 0.38
+tonemap_mode = 0
+fog_enabled = true
+fog_light_color = Color(0.95, 0.8, 0.67, 1)
+fog_density = 0.003
+
+[sub_resource type="SphereMesh" id="SkyDome"]
+radius = 95.0
+height = 190.0
+radial_segments = 32
+rings = 16
+
+[sub_resource type="ShaderMaterial" id="SkyPaint"]
+resource_local_to_scene = true
+shader = ExtResource("5_sky")
+
+[node name="Pit" type="Node3D"]
+script = ExtResource("1_view")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment")
+
+[node name="SkyDome" type="MeshInstance3D" parent="."]
+mesh = SubResource("SkyDome")
+material_override = SubResource("SkyPaint")
+cast_shadow = 0
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+rotation_degrees = Vector3(-34, 145, 0)
+light_color = Color(1, 0.854902, 0.658824, 1)
+light_energy = 0.5
+shadow_enabled = true
+shadow_bias = 0.035
+directional_shadow_mode = 0
+directional_shadow_max_distance = 46.0
+
+[node name="Bounce" type="OmniLight3D" parent="."]
+position = Vector3(0, 4.5, 2.6)
+light_color = Color(1, 0.819608, 0.631373, 1)
+light_energy = 0.12
+omni_range = 20.0
+
+[node name="Lighting" type="Node" parent="."]
+script = ExtResource("4_lighting")
+
+[node name="PitCamera" type="Camera3D" parent="."]
+current = true
+fov = 50.0
+near = 0.15
+far = 250.0
+script = ExtResource("2_camera")
+
+[node name="Rope" type="Node3D" parent="."]
+script = ExtResource("3_rope")
+
+[node name="Fx" type="Node3D" parent="."]

@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="GameUISoundBank" load_steps=5 format=3]
+
+; The menus answer in the pit's own voice: the coop's wooden notch under the
+; cursor, a single cluck on confirm, and the gate dropping onto its latch on
+; the way back. All three are rendered by tools/render_audio.py.
+
+[ext_resource type="Script" path="res://scripts/game_ui_sound_bank.gd" id="1_bank"]
+[ext_resource type="AudioStream" path="res://games/chicken_pit/assets/audio/notch.wav" id="2_focus"]
+[ext_resource type="AudioStream" path="res://games/chicken_pit/assets/audio/pull.wav" id="3_click"]
+[ext_resource type="AudioStream" path="res://games/chicken_pit/assets/audio/latch.wav" id="4_back"]
+
+[resource]
+script = ExtResource("1_bank")
+focus = ExtResource("2_focus")
+click = ExtResource("3_click")
+back = ExtResource("4_back")
+focus_volume_db = -9.0
+click_volume_db = -3.0
+back_volume_db = -4.0
+focus_cooldown_ms = 80

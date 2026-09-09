@@ -1,0 +1,135 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://games/chicken_pit/intro.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://ui/components/background.tscn" id="2_background"]
+
+[node name="ChickenPitIntro" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" parent="." instance=ExtResource("2_background")]
+
+[node name="Scrim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.043137, 0.031373, 0.023529, 0.36)
+
+[node name="Frame" type="MarginContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_constants/margin_left = 140
+theme_override_constants/margin_top = 90
+theme_override_constants/margin_right = 140
+theme_override_constants/margin_bottom = 70
+
+[node name="Layout" type="VBoxContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/separation = 28
+
+[node name="Title" type="Label" parent="Frame/Layout"]
+theme_type_variation = &"MenuHeading"
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.913725, 0.741176, 1)
+theme_override_colors/font_shadow_color = Color(0.066667, 0.047059, 0.035294, 0.85)
+theme_override_constants/shadow_offset_y = 5
+theme_override_font_sizes/font_size = 46
+text = "CHICKEN PIT"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="CardHolder" type="Control" parent="Frame/Layout"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="Card" type="Label" parent="Frame/Layout/CardHolder"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.960784, 0.925490, 0.850980, 1)
+theme_override_colors/font_shadow_color = Color(0.043137, 0.031373, 0.023529, 0.75)
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/line_spacing = 8
+theme_override_font_sizes/font_size = 42
+text = "Intro card"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="Bottom" type="HBoxContainer" parent="Frame/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 2
+
+[node name="Hint" type="Label" parent="Frame/Layout/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.658824, 0.584314, 0.478431, 1)
+theme_override_colors/font_shadow_color = Color(0.043137, 0.031373, 0.023529, 0.7)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 24
+text = "Press any key to skip"
+vertical_alignment = 1
+
+[node name="SkipButton" type="Button" parent="Frame/Layout/Bottom"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Skip"
+
+[node name="Progress" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -5.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="ProgressTrack" type="ColorRect" parent="Progress"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0.07)
+
+[node name="ProgressFill" type="ColorRect" parent="Progress"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.690196, 0.227451, 0.85)
+
+[connection signal="pressed" from="Frame/Layout/Bottom/SkipButton" to="." method="_on_skip_pressed"]
