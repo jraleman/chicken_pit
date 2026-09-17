@@ -187,6 +187,36 @@ static func barn_mesh() -> ArrayMesh:
 	return toy.finish()
 
 
+## Single pieces of the fairground, for anything that wants to show one off on
+## its own rather than as part of the field — the gallery's plinths, and any
+## future promo shot. Each returns exactly the geometry the arena bakes in, so a
+## display case can never drift from the match.
+static func pit_mesh() -> ArrayMesh:
+	var toy := ToyMesh.new()
+	_pit(toy)
+	return toy.finish()
+
+
+static func stand_mesh() -> ArrayMesh:
+	var toy := ToyMesh.new()
+	_stand(toy, Vector3.ZERO)
+	return toy.finish()
+
+
+static func tree_mesh() -> ArrayMesh:
+	var toy := ToyMesh.new()
+	_tree(toy, Vector3.ZERO)
+	return toy.finish()
+
+
+## [param goal] matches [method build]'s half-field, so the line sags over the
+## same span the arena strings it across.
+static func bunting_mesh(colors: Array[Color], goal := 2.2) -> ArrayMesh:
+	var toy := ToyMesh.new()
+	_bunting(toy, goal, colors)
+	return toy.finish()
+
+
 static func clouds() -> ArrayMesh:
 	var toy := ToyMesh.new()
 	for cloud in 7:

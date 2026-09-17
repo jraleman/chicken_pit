@@ -5,6 +5,7 @@ extends SceneTree
 const Scenery = preload("res://games/chicken_pit/pit/scenery.gd")
 const ChickenRig = preload("res://games/chicken_pit/pit/chicken_rig.gd")
 const ToyMesh = preload("res://games/chicken_pit/pit/toy_mesh.gd")
+const GalleryStage = preload("res://games/chicken_pit/ui/gallery_stage.gd")
 
 var _failures := PackedStringArray()
 
@@ -41,6 +42,8 @@ func _run() -> void:
 			"Coop paint must come from the supplied scene colour.")
 		_expect(mesh.get_aabb().size.y > 1.6, "The chicken must include its headwear silhouette.")
 		_test_chicken_animation(mesh)
+	_test_store_hats(colors)
+	_test_gallery_exhibits(colors)
 	var short_farm := Scenery.build(6, colors)
 	var long_farm := Scenery.build(18, colors)
 	_expect(short_farm.get_surface_count() == 1 and long_farm.get_surface_count() == 1,
@@ -58,6 +61,136 @@ func _run() -> void:
 	for failure in _failures:
 		push_error(failure)
 	quit(1)
+
+
+## Every plinth in the gallery has to have something standing on it, framed from
+## somewhere worth looking. An exhibit whose id the stage does not recognise
+## would show an empty case, and one with no framing entry would open on a
+## default angle that nobody chose.
+##
+## The coop colours are checked against the same literals the rest of this test
+## uses, which are in turn the `player_one_color` / `player_two_color` exports on
+## `gameplay.tscn`. The gallery draws birds when no round exists, so it cannot
+## read them off the shell, and this is what keeps the two in step.
+func _test_gallery_exhibits(colors: Array[Color]) -> void:
+	for coop in 2:
+		_expect(
+			ChickenPitOptions.COOP_COLORS[coop].is_equal_approx(colors[coop]),
+			"The gallery's coop colours must match the ones the pit plays in."
+		)
+	var stage: Node = GalleryStage.new()
+	for exhibit: Dictionary in ChickenPitOptions.GALLERY_EXHIBITS:
+		var id := str(exhibit["id"])
+		_expect(
+			GalleryStage.FRAMING.has(id),
+			"The gallery stage must know where to open '%s' from." % id
+		)
+		var mesh: ArrayMesh = stage.call("mesh_for", id)
+		_expect(mesh != null, "The gallery stage must build '%s'." % id)
+		if mesh == null:
+			continue
+		_expect(
+			mesh.get_surface_count() == 1,
+			"Exhibit '%s' must stay one batched surface on its plinth." % id
+		)
+		_expect(
+			mesh.get_aabb().size.length() > 0.2,
+			"Exhibit '%s' must have something to look at." % id
+		)
+	# The birds are the exhibits the store feeds, so they have to come out
+	# wearing the coop's paint rather than the rig's default.
+	for coop in 2:
+		var bird_id := (
+			ChickenPitOptions.EXHIBIT_BIRD_BLUE
+			if coop == 1
+			else ChickenPitOptions.EXHIBIT_BIRD_RED
+		)
+		var bird: ArrayMesh = stage.call("mesh_for", bird_id)
+		if bird == null:
+			continue
+		var paint: PackedColorArray = bird.surface_get_arrays(0)[Mesh.ARRAY_COLOR]
+		_expect(
+			_contains_color(paint, colors[coop]),
+			"Exhibit '%s' must wear its own coop's colour." % bird_id
+		)
+	_expect(
+		stage.call("mesh_for", "not_an_exhibit") == null,
+		"The gallery stage must not invent a model for an id it does not know."
+	)
+	stage.free()
+
+
+## Every hat on the shelf has to be geometry the pit can actually wear: batched
+## into the same surface, tagged as head parts so it dips with the head, wearing
+## the coop's colour, and tall enough to be seen without burying the comb or the
+## bonnet that tell the two coops apart.
+func _test_store_hats(colors: Array[Color]) -> void:
+	for coop in 2:
+		var bare := ChickenRig.build_mesh(colors[coop], coop == 1)
+		var bare_top := bare.get_aabb().position.y + bare.get_aabb().size.y
+		var crest := ChickenRig.BONNET_HAT_BASE if coop == 1 else ChickenRig.COMB_HAT_BASE
+		for item: Dictionary in ChickenPitOptions.STORE_ITEMS:
+			var hat := str(item["id"])
+			var mesh := ChickenRig.build_mesh(colors[coop], coop == 1, hat)
+			_expect(
+				mesh.get_surface_count() == 1,
+				"Wearing '%s' must not cost the bird a second draw call." % hat
+			)
+			var arrays := mesh.surface_get_arrays(0)
+			var top: float = mesh.get_aabb().position.y + mesh.get_aabb().size.y
+			if bool(item.get("default", false)):
+				_expect(
+					is_equal_approx(top, bare_top),
+					"The bare look must add nothing to the bird."
+				)
+				continue
+			_expect(
+				top > bare_top,
+				"'%s' must actually show above the bird it is worn on." % hat
+			)
+			_expect(
+				(arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()
+				> (bare.surface_get_arrays(0)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size(),
+				"'%s' must add geometry rather than replace the bird's own." % hat
+			)
+			_expect(
+				_lowest_above(arrays, crest - 0.06) >= crest - 0.06,
+				"'%s' must perch above the comb or bonnet, not bury it." % hat
+			)
+			_expect(
+				_contains_color(arrays[Mesh.ARRAY_COLOR], colors[coop]),
+				"'%s' must keep a band in the wearer's colour." % hat
+			)
+			_expect(
+				_tagged_above(arrays, crest),
+				"'%s' must be tagged as head geometry so it dips with the head." % hat
+			)
+
+
+## The lowest vertex a hat contributes, found by ignoring everything the bare
+## bird already reaches. Returns [param floor_y] when the hat adds nothing.
+func _lowest_above(arrays: Array, floor_y: float) -> float:
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var lowest := INF
+	for vertex in vertices:
+		if vertex.y >= floor_y:
+			lowest = minf(lowest, vertex.y)
+	return floor_y if lowest == INF else lowest
+
+
+## True when the geometry above [param height] is tagged as the head, which is
+## the part the vertex shader dips.
+func _tagged_above(arrays: Array, height: float) -> bool:
+	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+	var tags: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
+	var found := false
+	for index in vertices.size():
+		if vertices[index].y <= height:
+			continue
+		if not is_equal_approx(tags[index].x, ChickenRig.HAT_PART):
+			return false
+		found = true
+	return found
 
 
 func _test_pit_opening(mesh: ArrayMesh) -> void:

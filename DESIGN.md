@@ -1425,13 +1425,17 @@ rows for this style; it still generates the game's options and bindings.
 | 8 | `audio_manager.gd` | **Untouched.** One-shots go through `play_sfx()`; the two loops are game-owned nodes on the SFX bus (§11). |
 | 9 | `share_card.gd` / `share_art_scene_path` | **Implemented.** The game supplies its original cover portrait and opts into `GameTheme.style_share_card`. The shared card uses that manifest's branding even in collection builds, freezes a scene-local copy of the menu backdrop, and accepts game-native stat captions and rematch copy. Other games retain the default presentation unless they opt in. |
 | 10 | Export presets | **Simplified.** The `games/chicken_pit/web/*` exclusion in both presets is removed along with the folder it filtered. |
+| 11 | `game_manifest.gd` + a `Store` autoload + `scenes/menus/store.tscn` + a `_round_points_earned()` shell hook — a cosmetics shop | **Implemented, and game-agnostic.** Four manifest fields describe a shop; the framework renders and banks it. Chicken Pit declares seven hats, two coop slots and a Feather currency in `chicken_pit_options.gd`, plus `ui/hat_preview.tscn` for the card art. No shared file names this game, and a game declaring no `store_items` sees no Store button anywhere (§14.9). |
+| 12 | `game_manifest.gd` + `scenes/menus/gallery.tscn` — a model gallery | **Implemented, and game-agnostic.** Two manifest fields describe a museum; the framework owns the room, the list, the orbit and the label, and **no autoload was added** because a gallery saves nothing. Chicken Pit declares nine exhibits in `chicken_pit_options.gd` and supplies `ui/gallery_stage.tscn`, which builds each one from the same `ChickenRig`/`Scenery` calls the match makes. `scenery.gd` gained four public mesh accessors to make that possible. A game declaring no `gallery_exhibits` sees no Gallery button anywhere (§14.10). |
 
 **One required change, one optional polish, and eight rows that say "nothing to
 do".** An earlier draft claimed zero required and was wrong; row 1 is the price
 of the CPU opponent the manifest already advertises. That same draft also
 proposed asserting the session is two-seat, which would have broken the
 framework test suite — row 2 is what that assert should have been, demoted to
-optional because §4.1 no longer needs it.
+optional because §4.1 no longer needs it. Rows 11 and 12 were added later and
+are a different kind of entry: not concessions for this game, but framework
+capabilities this game happens to be the first to use (§14.9, §14.10).
 
 ### 14.6 Accessibility
 
@@ -1566,9 +1570,10 @@ the model rather than merely being stored.
 
 **Framework-wide tests** cover this game automatically and must keep passing —
 `game_shell_test.gd`, `game_options_test.gd`, `game_select_test.gd`,
-`single_game_test.gd`, `lives_mode_test.gd` and `accessibility_test.gd` all
-iterate the catalog. `game_shell_test.gd` instantiating every gameplay scene
-headless is why §5.4 is a hard requirement rather than a preference.
+`store_test.gd`, `gallery_test.gd`, `single_game_test.gd`, `lives_mode_test.gd`
+and `accessibility_test.gd` all iterate the catalog. `game_shell_test.gd`
+instantiating every gameplay scene headless is why §5.4 is a hard requirement
+rather than a preference.
 
 ```bash
 godot --headless --path . --script res://games/chicken_pit/tests/pit_state_test.gd -- --game=all
@@ -1577,6 +1582,111 @@ godot --headless --path . --script res://games/chicken_pit/tests/pit_camera_test
 godot --headless --audio-driver Dummy --path . --script res://games/chicken_pit/tests/pit_audio_test.gd -- --game=all
 godot --headless --path . --script res://games/chicken_pit/tests/pit_round_test.gd -- --game=all
 ```
+
+---
+
+### 14.9 The hat store
+
+A tug-of-war is a spectacle, and a spectacle wants a costume. The store is the
+first place this game spends the score on something other than a leaderboard.
+
+**It is framework data, not a Chicken Pit screen.** `GameManifest` grew
+`store_items`, `store_slots`, `store_currency` and `store_preview_scene_path`;
+the `Store` autoload owns wallets, ownership and equipped slots; and
+`scenes/menus/store.tscn` renders whatever a manifest declares. Chicken Pit
+contributes three constants in `chicken_pit_options.gd` and one preview scene.
+Nothing under `autoload/`, `scenes/` or `ui/` names this game — the same rule
+§14.5 applies to everything else.
+
+**Wallets are per game.** Chicken Pit banks in the thousands (100 a notch, 20 a
+unit-second of ground held, 2000 a pin) while a target game counts hits. A
+shared purse would let this game buy out every other shop by simply being
+loud, so each game converts its own round with its own rule:
+`round(best × 0.02) + 5`, `+10` for beating the CPU, capped at 150. The cap is
+what stops the §14.3 option envelope from becoming an exploit: an 18-notch rope
+on `decay = 0.5` is a legitimately long match, not a licence to clear the shelf
+in one sitting.
+
+**Two slots, one shelf.** A hat is bought once and can be worn on either end of
+the rope, because a tug-of-war has two coops and both of them are somebody's
+birds. That falls out of the generic `kind`/slot match — an item declaring
+`"kind": "hat"` fits any slot accepting hats — so the framework never learns
+that there are exactly two.
+
+**Hats are additive, and that is an accessibility contract, not a style.**
+§14.6 and §6.2 make the tall comb and the tied bonnet the non-colour way to
+tell the coops apart. A hat that replaced either one would delete that signal
+for anybody who cannot use the red/blue pair, so every hat perches *above* it:
+`COMB_HAT_BASE = 1.90` clears the comb's 1.905 crest, `BONNET_HAT_BASE = 1.82`
+the bonnet's 1.815 dome. Each hat also keeps a band in its wearer's team
+colour, so the hat reinforces the side rather than masking it.
+`pit_geometry_test.gd` asserts both for every entry in `STORE_ITEMS`, so a new
+hat is covered by the test that already exists.
+
+**It costs nothing to render.** Hats are emitted into the bird's existing
+single surface with head part id `3.0`, so they inherit the head-dip vertex
+animation from `chicken.gdshader` for free and add **zero** draw calls against
+the §13.1 budget of 60.
+
+**It applies at the countdown, not mid-pull.** `gameplay.gd` reads the equipped
+hats in `_load_round_settings()`, which the shell calls before
+`_reset_round_state()`. A hat changed from the pause menu therefore lands on
+the next round, the same way §14.2's live settings do. `pit_view.gd` receives
+them as an argument to `reset_round()` and never touches the `Store` autoload —
+it is loaded directly by `pit_view_test.gd`, which runs before autoloads exist.
+
+### 14.10 The gallery
+
+The farm is modelled to a standard a match never shows. The barn stands behind
+the north fence and the camera never approaches it; the pit's sloped walls are
+seen from forty feet up with two coops of birds on top of them; the bunting is
+a strip of colour at the edge of frame. The gallery is where all of it stands
+still and the player can walk round it.
+
+**It is framework data too.** `GameManifest` grew `gallery_exhibits` and
+`gallery_stage_scene_path`; `scenes/menus/gallery.tscn` owns the room, the list,
+the orbit and the label. Chicken Pit contributes one constant in
+`chicken_pit_options.gd` and one stage scene. There is deliberately **no Gallery
+autoload** — a store has a wallet to protect, a museum has an opening time and a
+door, so the manifest is the whole state and nothing is written to `user://`.
+
+**The exhibits are the game, not a render of it.** Every plinth calls the same
+`ChickenRig.build_mesh` / `Scenery.*` builder the match calls, and the two coop
+birds come out wearing whatever hats §14.9's store has equipped. A gallery
+showing a nicer version of the game would be an advert; this one cannot drift
+from what is actually played, because there is only one copy of the geometry.
+Making that possible is why `scenery.gd` gained public `pit_mesh()`,
+`stand_mesh()`, `tree_mesh()` and `bunting_mesh()` beside the existing
+`barn_mesh()` — accessors onto the private builders, not copies of them.
+
+**Framing is derived, not authored.** Each exhibit is treated as the cylinder it
+sweeps out as it turns, and the camera is placed where that cylinder is tangent
+to the narrower of the two field-of-view angles. A 1.9-unit bird and a 23-unit
+showground therefore both fit, on a phone held upright and on an ultrawide,
+without a single hand-measured distance. A new exhibit needs a `FRAMING` entry
+only to say which side is worth opening on.
+
+**Rendering is request-driven.** The `SubViewport` draws one frame whenever the
+view actually changes, so a gallery left open on a still model costs nothing.
+That matters because this screen can be opened from the pause overlay with a
+whole 3D match still resident behind it — see §13.1.
+
+**The label is not decoration.** Every exhibit carries a description and two or
+three specification lines, because §6.2's rule that meaning never rests on one
+channel applies to a screen whose subject *is* a picture. Reduced motion parks
+the turntable and disables the auto-spin toggle with a tooltip saying why,
+rather than leaving a switch that silently does nothing, and the player can
+still turn the model by hand. Every orbit action has an on-screen button as well
+as a drag and a wheel notch; the arrow keys are deliberately left to menu focus,
+because a focusable viewer that swallowed `ui_left`/`ui_right` would trap a
+keyboard or d-pad player inside the picture with no way out.
+
+**One exhibit is earned.** *Cluck County Showground* — the whole fairground in
+one mesh — sits behind `pit_first_match`. It is listed, named and explained from
+the first visit, and disabled with the reason why, so the collection reads as
+something to finish rather than something the game is hiding. Earning it while
+the screen is open rebuilds the list immediately, because the pause overlay sits
+on a round that is still scoring.
 
 ---
 
@@ -1671,3 +1781,5 @@ files instead of twenty.
 | 4 | **Reference build removed.** The React/Three.js prototype under `web/` was deleted from the repository along with its assets, including the chicken and barn `.obj` models. §3.1 keeps the analysis of its pulling model — that reasoning is why §3 exists — but now describes it in the past tense instead of citing files. §6.3 and §9.1 no longer name a source mesh; both models must be sourced before §15 step 4, recorded as risk 9. Removed the intro test's transcript-versus-source check and its `_words_of()` helper, which could only ever skip once the sources were gone, plus the Vite entries in `.gitignore` and the `games/chicken_pit/web/*` exclusions in both export presets. |
 | 5 | **The standalone menus restyled to the game's own look, retiring the dusk/noon split** (§1, §6.1, risk 6). The straw-and-dirt theme shared nothing with the pit but a hinge colour; the menus now take cream `#fff8e7` and gold `#ffd45c` from `ui/tug_meter.gd`, barn red `#e8453c` from `pit/scenery.gd` and the `#fff1d1` key light from the pit's `Sun`, over a turf-shadow backdrop. Added four sibling-standard resources the game had been missing — `ui/menu_background.gdshader` and `.tres` (an original approach-to-the-fairground backdrop: coop-coloured bunting, mown stripes converging on a far fence, lamp glows, drifting dust), `ui/menu_plaque.tres` over a new `assets/ui/plaque.svg` barn-board texture, `ui/menu_skin.tres` in the tug meter's widget language, and `ui/menu_sounds.tres` over a new `latch` cue rendered by `tools/render_audio.py`, which now writes seven WAVs. Two constraints were measured rather than assumed and are recorded in §6.1: the shared menus bake ~80 fixed label colours a theme cannot reach, which fixes a legibility floor on backdrop brightness (tagline 5.22:1, footer 5.17:1, both in line with the shipped baselines); and the plaque's 1.5 key plus 4.0 omni fill clip a bright albedo texture's red channel to flat orange, so `plaque.svg` is authored in the midtones. Note that Godot's shading language predefines `PI` — redeclaring it fails compilation, and `single_game_test.gd` still reports a pass when it does. |
 | 6 | **The player-count step retired and a walkthrough clip recorded.** §14.5 row 2 is implemented as a game-agnostic `supports_single_player` manifest capability rather than a Chicken Pit branch: `GameSession.single_player_offered()` reads it, and `mode_select.gd` collapses to its confirmation step whenever the player count has exactly one answer, hiding the stepper and *Change Mode* while keeping the *Who plays as Player 2?* selector that already carried the real choice. Chicken Pit clears the flag because Single Player and *Multiplayer vs CPU* were the same two-seat session (`gameplay.gd` seats a bird whenever `player_two_enabled()` is false), so the screen asked a question with one honest answer. `_prepare_session()` still degrades rather than asserts — mobile and `game_shell_test.gd` both enter solo — see §4.1. The now-unreachable `mode_select_intro`, `mode_select_hint`, `single_player_description` and `multiplayer_description` copy keys were dropped, and `solo_confirm_title` retitled for the CPU card it now labels. Separately, the game joined the shared tutorial pipeline: `tools/tutorial_capture.gd` gained a Chicken Pit caption script and a scripted puller that rotates the real `Q`/`W`/`E` bindings through `_register_pull()` at a legal 0.13 s cadence, and `tools/record_tutorials.ps1` gained a per-game encoder quality because a 3D clip costs Theora roughly twice a 2D one. `assets/video/tutorial_chicken_pit.ogv` and its poster now back the instructions video card and the game-picker preview; `assets/pit-poster.png` remains the README hero. The clip teaches the rhythm rather than staging a pin: the CPU seed comes from the shell RNG, so no scripted ending is reproducible across takes. |
+| 7 | **The hat store** (§14.9, §14.5 row 11). Rounds now pay Feathers and Feathers buy hats. The shop is a framework capability rather than a Chicken Pit screen: `GameManifest` gained `store_items`, `store_slots`, `store_currency` and `store_preview_scene_path`, a `Store` autoload owns per-game wallets, ownership and equipped slots in `user://store.cfg`, `scenes/menus/store.tscn` renders whatever a manifest declares, and `GameShell._end_round()` banks the payout through an overridable `_round_points_earned()`. Wallets are deliberately per game: this game scores in the thousands and a shared purse would let it buy out every other shop, so the rate is `round(best x 0.02) + 5`, `+10` solo over the CPU, capped at 150 — the cap is what keeps §14.3's long-rope/slow-decay corner from becoming an exploit. Chicken Pit contributes seven hats, two coop slots, a Feather currency and `ui/hat_preview.tscn`. Every hat perches **above** the comb or the bonnet (`COMB_HAT_BASE = 1.90`, `BONNET_HAT_BASE = 1.82`) and keeps a team-coloured band, because §14.6 makes those two silhouettes the non-colour way to tell the coops apart; `pit_geometry_test.gd` asserts it for every declared hat. Hats join the bird's existing single surface on head part `3.0`, so they inherit the head-dip animation and cost zero draw calls against §13.1. They are read in `_load_round_settings()`, so a swap from the pause menu lands at the next countdown, and `pit_view.gd` receives them as an argument rather than reading an autoload it cannot see from `pit_view_test.gd`. |
+| 8 | **The gallery** (§14.10, §14.5 row 12). The models are built to a standard the match never shows — the barn stands behind the north fence, the pit's walls are seen from forty feet up, the bunting is a strip of colour at the edge of frame — so a museum was added where they stand still. Like the store it is a framework capability rather than a Chicken Pit screen: `GameManifest` gained `gallery_exhibits` and `gallery_stage_scene_path`, and `scenes/menus/gallery.tscn` owns the room, the grouped list, the orbit and the label. **No autoload was added**, deliberately: a store has a wallet to protect, a museum has an opening time and a door, so the manifest is the whole state and nothing reaches `user://`. Chicken Pit contributes nine exhibits in `chicken_pit_options.gd` and `ui/gallery_stage.tscn`, which builds every one of them from the same `ChickenRig`/`Scenery` call the match makes — the two coop birds even wear the hats revision 7's store has equipped — so the display case cannot drift from the game. `pit/scenery.gd` gained public `pit_mesh()`, `stand_mesh()`, `tree_mesh()` and `bunting_mesh()` beside `barn_mesh()`; they are accessors onto the private builders, not copies. Framing is derived rather than authored: each exhibit is treated as the cylinder it sweeps out as it turns and the camera placed where that cylinder is tangent to the narrower field-of-view angle, so a 1.9-unit bird and a 23-unit showground both fit in portrait and in ultrawide with no hand-measured distance. The `SubViewport` draws only when the view changes, because this screen opens from the pause overlay with a whole 3D match still resident (§13.1). Every exhibit carries a description and specification lines, reduced motion parks the turntable and disables the toggle with a reason, and every orbit action has an on-screen button — the arrow keys stay with menu focus so a keyboard or d-pad player is never trapped inside the picture (§6.2). *Cluck County Showground* sits behind `pit_first_match`, listed and explained but disabled, so the collection reads as something to finish. `tests/gallery_test.gd` covers the framework side and `pit_geometry_test.gd` builds all nine exhibits headlessly. |

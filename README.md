@@ -8,8 +8,8 @@ burst. Two coops. One rope. Absolutely no dignity.
 
 This repository is a **game folder for the DeskCanSaw Godot base project**. It
 is consumed as a git submodule at `godot-base/games/chicken_pit/` inside
-[`jraleman/dcs_games`](https://github.com/jraleman/dcs_games).
-On its own it is
+[`jraleman/dcs_games`](https://github.com/jraleman/dcs_games), the same way
+[DeadMetalJam](https://github.com/jraleman/DeadMetalJam) is. On its own it is
 not a runnable project — there is no `project.godot` here, because the base
 project owns the engine configuration, the autoloads and every shared screen.
 
@@ -110,6 +110,8 @@ pit/pit_lighting.gd        # scene-owned sunset cycle and accessible light accen
 pit/pit_music.gd           # owned, synchronized jig and near-pin danger stem
 pit/sunset_sky.gdshader    # painted gradient sky, driven by the scene's clock
 pit/rope_view.gd           # refitting cosmetic rope, beak grips and pit-rim supports
+ui/hat_preview.gd / .tscn  # 3D hen portrait drawn on each store card
+ui/gallery_stage.gd / .tscn # turntable for the gallery's nine exhibits
 ui/tug_meter.gd            # native-resolution strength, knot and rebound key hints
 ui/menu_background.gdshader # original approach-to-the-fairground menu backdrop
 ui/menu_*.tres             # standalone menu backdrop, plaque, widget skin, sounds
@@ -222,11 +224,78 @@ coop without relying on colour.
 The CPU is a named bird rather than a number because it changes *how* it
 plays, not just how hard it pulls.
 
+## The hat store
+
+Finished matches pay **Feathers**, and Feathers buy hats. Open the shop from
+the title screen in a standalone build, or from the pause overlay in the
+collection.
+
+A match pays `round(best score × 0.02) + 5`, plus 10 for beating the CPU,
+capped at 150 — Chicken Pit scores in the thousands, so the rate turns a good
+pull-off into a few dozen feathers rather than a fortune, and the cap stops a
+long rope on a slow decay from clearing the shelf in one sitting.
+
+| Hat | Price | Notes |
+| --- | --- | --- |
+| Comb & Bonnet | free | How a bird is born; worn until you buy something |
+| Straw Boater | 40 | Ribbon in coop colours |
+| Party Cone | 70 | Pom on top |
+| Ten-Gallon Hat | 110 | Wide brim, creased crown |
+| Horned Helm | 170 | Historically inaccurate |
+| Top Hat | 240 | Formal dress, on a rope |
+| Roost Crown | 360 | Needs the **Clean Sweep** achievement first |
+
+The two coops are **separate slots**, so a hat is bought once and can then be
+worn by either side — or by both. Hats are read in `_load_round_settings()`,
+which means a change made from the pause menu dresses the birds at the next
+countdown rather than mid-pull.
+
+Every hat **sits above** the comb and the bonnet instead of replacing them, and
+keeps a band in its wearer's team colour. Those two silhouettes are how the
+coops are told apart without relying on colour, so no purchase is allowed to
+remove them — `tests/pit_geometry_test.gd` asserts it for all seven. The hats
+are built into the same single surface as the bird, so wearing one costs zero
+extra draw calls.
+
+## The gallery
+
+The pit is built from about a dozen models, and in a match you see most of them
+from forty feet up while two coops try to drown each other out. The gallery is
+where they stand still. Open it from the title screen in a standalone build, or
+from the pause overlay in the collection.
+
+Nine exhibits, in three groups:
+
+| Group | Exhibits |
+| --- | --- |
+| The birds | Red Coop Puller · Blue Coop Puller · Bleacher Bird |
+| The fairground | The Barn · The Pit · The Bleachers · The Oak · The Bunting |
+| The whole show | Cluck County Showground — needs the **Chicken Run** achievement |
+
+Every one is built by the same `ChickenRig` and `Scenery` call the match makes,
+not by a prettier model kept for display: the two coops' birds even come out
+wearing whatever hats the store has equipped, so the museum can never drift
+from the game. The Barn and the Showground in particular are the only place the
+farm's modelling is visible at all — a match never gets closer to either.
+
+Drag to turn, scroll to zoom, or use the on-screen buttons; **Reset** puts the
+model back the way it was framed. Each exhibit is framed automatically from the
+cylinder it sweeps out as it turns, so it fits on a phone held upright and on an
+ultrawide without a hand-tuned camera.
+
 ## Accessibility
 
 Rebindable pull keys for both coops, audio captions for meaningful sound-only
 events, reduced motion, player labels that never rely on colour alone, and the
 intro narration transcribed on screen so the opening is never sound-only.
+Store hats are additive: they perch above the comb and the bonnet, so the two
+coop silhouettes survive every purchase. Every gallery exhibit carries a written
+label and two or three specification lines, so no model is carried by the
+picture alone; reduced motion parks the turntable and says so rather than
+leaving a switch that does nothing, and the model can still be turned by hand.
+Every orbit action has an on-screen button as well as a drag, and the arrow keys
+are deliberately left to menu navigation so a keyboard or d-pad player is never
+trapped inside the picture.
 
 Reduced motion fixes the camera and sunset lighting, straightens the rope and
 removes decorative motion and particles; essential knot movement and strength

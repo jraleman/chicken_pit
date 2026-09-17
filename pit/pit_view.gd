@@ -55,6 +55,8 @@ var _pin_winner := -1
 var _pin_time := 0.0
 var _pin_feathers_emitted := false
 var _settled := false
+## One store hat id per coop; empty means the bird's own comb or bonnet only.
+var _hats := PackedStringArray(["", ""])
 var _cheer: Array[float] = [0.0, 0.0]
 var _recoil: Array[float] = [0.0, 0.0]
 var _last_notch := -999
@@ -66,12 +68,18 @@ func _ready() -> void:
 		_build_particles()
 
 
-func reset_round(state: PitState, colors: Array[Color], completed_matches := 0) -> void:
+func reset_round(
+	state: PitState, colors: Array[Color], completed_matches := 0,
+	hats := PackedStringArray()
+) -> void:
 	_round_pit_chickens = PitHistory.chickens_for_matches(completed_matches)
 	_pit_chickens = _round_pit_chickens
-	if _length != state.L or _colors != colors:
+	var worn := hats.duplicate()
+	worn.resize(2)
+	if _length != state.L or _colors != colors or _hats != worn:
 		_length = state.L
 		_colors = colors.duplicate()
+		_hats = worn
 		if not inert:
 			_build_farm()
 	lighting.reset_round()
@@ -350,7 +358,9 @@ func _build_farm() -> void:
 		root.position.y = 0.04
 		_farm.add_child(root)
 		_coops.append(root)
-		var mesh := ChickenRig.build_mesh(_colors[coop], coop == 1)
+		var mesh := ChickenRig.build_mesh(
+			_colors[coop], coop == 1, _hats[coop] if coop < _hats.size() else ""
+		)
 		for index in BIRDS_PER_COOP:
 			var bird := ChickenRig.new()
 			bird.name = "Chicken%d" % (index + 1)

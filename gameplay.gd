@@ -23,6 +23,9 @@ var _round_pull_power := ChickenPitOptions.DEFAULT_PULL_POWER
 var _round_strength_decay := ChickenPitOptions.DEFAULT_STRENGTH_DECAY
 var _round_rope_length := ChickenPitOptions.DEFAULT_ROPE_LENGTH
 var _round_cpu_difficulty := ChickenPitOptions.DEFAULT_CPU_DIFFICULTY
+## The hats each coop wears this round, read once so a purchase made from the
+## pause menu dresses the birds at the next countdown rather than mid-pull.
+var _round_hats := PackedStringArray(["", ""])
 
 var _state: PitState
 var _pit_history: PitHistory
@@ -122,6 +125,10 @@ func _load_round_settings() -> void:
 		ChickenPitOptions.CPU_DIFFICULTY_KEY
 	)
 	_active_round_duration = _round_length + Settings.extra_round_time()
+	_round_hats = PackedStringArray([
+		Store.equipped_id(GAME_ID, ChickenPitOptions.hat_slot(0)),
+		Store.equipped_id(GAME_ID, ChickenPitOptions.hat_slot(1)),
+	])
 
 
 func _prepare_session() -> void:
@@ -190,7 +197,7 @@ func _reset_round_state() -> void:
 		_round_rope_length, _round_pull_power, _round_strength_decay, _round_gameplay_speed
 	)
 	_view.reset_round(_state, [player_one_color, player_two_color],
-		_pit_history.completed_matches)
+		_pit_history.completed_matches, _round_hats)
 	_tug_meter.reset()
 	_tug_meter.present(_state)
 

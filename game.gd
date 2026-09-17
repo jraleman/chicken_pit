@@ -38,6 +38,17 @@ static func manifest() -> GameManifest:
 	game.control_style = GameManifest.CONTROL_STYLE_CUSTOM_KEYS
 	game.tunables = ChickenPitOptions.TUNABLES
 	game.control_bindings = ChickenPitOptions.CONTROL_BINDINGS
+	# Matches pay feathers; feathers buy hats. Two slots, because a tug-of-war
+	# has two ends and a hat bought once can be worn on either.
+	game.store_currency = ChickenPitOptions.STORE_CURRENCY
+	game.store_slots = ChickenPitOptions.STORE_SLOTS
+	game.store_items = ChickenPitOptions.STORE_ITEMS
+	game.store_preview_scene_path = "res://games/chicken_pit/ui/hat_preview.tscn"
+	# The museum next door to the shop: the same meshes the match builds, on a
+	# turntable, so the modelling work is visible somewhere other than at
+	# gameplay distance.
+	game.gallery_exhibits = ChickenPitOptions.GALLERY_EXHIBITS
+	game.gallery_stage_scene_path = "res://games/chicken_pit/ui/gallery_stage.tscn"
 	game.copy = {
 		# No `mode_select_intro`, `mode_select_hint`, `single_player_description`
 		# or `multiplayer_description`: those belong to the player-count step,
@@ -66,6 +77,14 @@ static func manifest() -> GameManifest:
 			+ "Pin a coop or bank the most ground  ·  Esc pauses"
 		),
 		"instructions_demo_prompt": "ROLL YOUR KEYS. HOLD YOUR GROUND.",
+		"store_intro": (
+			"Every match pays feathers — ground held, notches taken and pins "
+			+ "won. Spend them on hats, and pick which coop wears each one."
+		),
+		"gallery_intro": (
+			"Every model the pit is built from, up close. Turn them, zoom in, "
+			+ "and see the hats you bought on the birds that wear them."
+		),
 		"instructions_solo_summary": (
 			"You hold one end of the rope and a rival bird holds the other. "
 			+ "Alternate your three pull keys to build strength; whichever coop "

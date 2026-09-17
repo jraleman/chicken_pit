@@ -1,0 +1,20 @@
+# Normalize EOL for everything Git detects as text.
+* text=auto eol=lf
+
+# Godot source formats, declared explicitly so none is misdetected as binary.
+*.gd        text eol=lf
+*.gdshader  text eol=lf
+*.tscn      text eol=lf
+*.tres      text eol=lf
+*.import    text eol=lf
+*.uid       text eol=lf
+*.svg       text eol=lf
+*.md        text eol=lf
+
+# Authored binary assets: never normalize, never diff as text.
+*.png       binary
+*.webp      binary
+*.wav       binary
+*.mp3       binary
+*.ogv       binary
+*.ttf       binary

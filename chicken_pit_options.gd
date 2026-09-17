@@ -202,3 +202,307 @@ static func pull_actions(player_index: int) -> Array[StringName]:
 	if player_index == 0:
 		return [PULL_ONE_A_ACTION, PULL_ONE_B_ACTION, PULL_ONE_C_ACTION]
 	return [PULL_TWO_A_ACTION, PULL_TWO_B_ACTION, PULL_TWO_C_ACTION]
+
+
+# --------------------------------------------------------------------------
+# The hat store
+# --------------------------------------------------------------------------
+
+## What the pit pays out for a match, and what that money is called.
+##
+## Chicken Pit scores in the thousands — a hundred points a notch, twenty a
+## unit-second of held ground and two thousand for a pin — so the rate converts
+## a good match into a few dozen feathers rather than a fortune. The ceiling
+## keeps a long rope on a slow decay from buying out the whole shelf at once.
+const STORE_CURRENCY := {
+	"name": "Feather",
+	"plural": "Feathers",
+	"points_per_score": 0.02,
+	"round_bonus": 5,
+	"win_bonus": 10,
+	"max_per_round": 150,
+}
+
+const HAT_KIND := "hat"
+const HAT_SLOT_ONE := "pit_hat_red"
+const HAT_SLOT_TWO := "pit_hat_blue"
+
+const HAT_BARE := "pit_hat_bare"
+const HAT_STRAW := "pit_hat_straw"
+const HAT_PARTY := "pit_hat_party"
+const HAT_COWBOY := "pit_hat_cowboy"
+const HAT_VIKING := "pit_hat_viking"
+const HAT_TOP := "pit_hat_top"
+const HAT_CROWN := "pit_hat_crown"
+
+const HAT_HEADING := "Hats"
+
+## One slot per coop rather than one hat for the pit, because a tug-of-war has
+## two ends and both of them are somebody's birds. A hat is bought once and can
+## then be worn on either side.
+const STORE_SLOTS: Array[Dictionary] = [
+	{
+		"id": HAT_SLOT_ONE,
+		"kind": HAT_KIND,
+		"title": "Red coop",
+		"description": "What the red coop's birds wear into the pit.",
+	},
+	{
+		"id": HAT_SLOT_TWO,
+		"kind": HAT_KIND,
+		"title": "Blue coop",
+		"description": "What the blue coop's birds wear into the pit.",
+	},
+]
+
+## Hats sit above the comb and the bonnet rather than replacing them: those two
+## silhouettes are how the coops are told apart without colour, so no purchase
+## is allowed to remove them. Each hat keeps a band in the wearer's team colour
+## for the same reason.
+const STORE_ITEMS: Array[Dictionary] = [
+	{
+		"id": HAT_BARE,
+		"kind": HAT_KIND,
+		"price": 0,
+		"default": true,
+		"title": "Comb & Bonnet",
+		"description": "How a bird is born. Tall comb, tied bonnet, no airs.",
+		"badge": "BARE",
+		"color": Color("fff8e7"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_STRAW,
+		"kind": HAT_KIND,
+		"price": 40,
+		"title": "Straw Boater",
+		"description": "Sunday-best fairground straw with a ribbon in coop colours.",
+		"badge": "STRAW",
+		"color": Color("e8c46a"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_PARTY,
+		"kind": HAT_KIND,
+		"price": 70,
+		"title": "Party Cone",
+		"description": "A pointed hat with a pom on top. Celebrate before you win.",
+		"badge": "PARTY",
+		"color": Color("ff6fae"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_COWBOY,
+		"kind": HAT_KIND,
+		"price": 110,
+		"title": "Ten-Gallon Hat",
+		"description": "Wide brim, creased crown, and absolutely no cattle.",
+		"badge": "RANCH",
+		"color": Color("8a5a33"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_VIKING,
+		"kind": HAT_KIND,
+		"price": 170,
+		"title": "Horned Helm",
+		"description": "Historically inaccurate. Tactically magnificent.",
+		"badge": "HELM",
+		"color": Color("9aa6b5"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_TOP,
+		"kind": HAT_KIND,
+		"price": 240,
+		"title": "Top Hat",
+		"description": "For the coop that pulls a rope in formal dress.",
+		"badge": "TOP",
+		"color": Color("3a3d4c"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_CROWN,
+		"kind": HAT_KIND,
+		"price": 360,
+		"title": "Roost Crown",
+		"description": "Gold points and coop-coloured jewels. Ruler of the pit.",
+		"badge": "CROWN",
+		"color": Color("ffd45c"),
+		"requires_achievement": "pit_clean_sweep",
+		"heading": HAT_HEADING,
+	},
+]
+
+
+## The store slot a coop wears, so the gameplay scene never spells out the ids.
+static func hat_slot(player_index: int) -> String:
+	return HAT_SLOT_ONE if player_index == 0 else HAT_SLOT_TWO
+
+
+# --------------------------------------------------------------------------
+# The gallery
+# --------------------------------------------------------------------------
+
+## The coops' colours, mirroring the `player_one_color` / `player_two_color`
+## exports on `gameplay.tscn`.
+##
+## The shell owns those during a round, but the gallery draws birds when no
+## round exists and still has to get the sides right. `gallery_test.gd` asserts
+## these two stay in step with the scene.
+const COOP_COLORS: Array[Color] = [Color("ff6b57"), Color("4da3ff")]
+
+const EXHIBIT_BIRD_RED := "pit_bird_red"
+const EXHIBIT_BIRD_BLUE := "pit_bird_blue"
+const EXHIBIT_SPECTATOR := "pit_spectator"
+const EXHIBIT_BARN := "pit_barn"
+const EXHIBIT_PIT := "pit_pit"
+const EXHIBIT_STAND := "pit_stand"
+const EXHIBIT_TREE := "pit_tree"
+const EXHIBIT_BUNTING := "pit_bunting"
+const EXHIBIT_SHOWGROUND := "pit_showground"
+
+## What the gallery puts on its plinths.
+##
+## Every one of these is the mesh the match itself builds, not a model made for
+## the display case — the birds even wear the hats currently equipped in the
+## store. A gallery that showed a prettier version of the game would be an
+## advert, and this is a museum.
+##
+## The facts are the exhibit's label card. They exist so a model is never
+## carried by the picture alone, which is the same reason the intro is
+## transcribed and the tug meter prints numbers.
+const GALLERY_EXHIBITS: Array[Dictionary] = [
+	{
+		"id": EXHIBIT_BIRD_RED,
+		"title": "Red Coop Puller",
+		"heading": "The birds",
+		"badge": "RED",
+		"color": Color("ff6b57"),
+		"description": (
+			"Six of these hold the red end of the rope. The tall comb is how "
+			+ "you tell the coops apart without relying on colour."
+		),
+		"facts": [
+			"Rigid parts, one surface, zero skinning",
+			"Wings, head and feet move in the vertex shader",
+			"Wears whatever hat the red coop has equipped",
+		],
+	},
+	{
+		"id": EXHIBIT_BIRD_BLUE,
+		"title": "Blue Coop Puller",
+		"heading": "The birds",
+		"badge": "BLUE",
+		"color": Color("4da3ff"),
+		"description": (
+			"The same rig in the other coop's colours, wearing the tied bonnet "
+			+ "that stands in for the comb."
+		),
+		"facts": [
+			"Identical mesh, mirrored across the pit",
+			"Bonnet and comb are the non-colour side signal",
+			"Wears whatever hat the blue coop has equipped",
+		],
+	},
+	{
+		"id": EXHIBIT_SPECTATOR,
+		"title": "Bleacher Bird",
+		"heading": "The birds",
+		"badge": "FAN",
+		"color": Color("fff8e7"),
+		"description": (
+			"The crowd. Hundreds of these sit in one MultiMesh, which is why a "
+			+ "full house costs a single draw call."
+		),
+		"facts": [
+			"One shared mesh, instanced for the whole crowd",
+			"Jumps on a notch; parked by reduced motion",
+		],
+	},
+	{
+		"id": EXHIBIT_BARN,
+		"title": "The Barn",
+		"heading": "The fairground",
+		"badge": "BARN",
+		"color": Color("e8453c"),
+		"description": (
+			"Cluck County's little red house, cross-braced doors and all. It "
+			+ "stands behind the north fence and never moves."
+		),
+		"facts": [
+			"Independently reusable: Scenery.barn_mesh()",
+			"Planks, hayloft, weather vane and clock face",
+			"Batched into the scenery surface at build time",
+		],
+	},
+	{
+		"id": EXHIBIT_PIT,
+		"title": "The Pit",
+		"heading": "The fairground",
+		"badge": "PIT",
+		"color": Color("966339"),
+		"description": (
+			"The hole itself: an octagonal cut through every ground layer, with "
+			+ "sloped walls, a lip and a bed of straw at the bottom."
+		),
+		"facts": [
+			"Cut out of the terrain, not painted on top of it",
+			"Walls and floor share the scenery batch",
+			"Pinned birds land on the straw and stay there",
+		],
+	},
+	{
+		"id": EXHIBIT_STAND,
+		"title": "The Bleachers",
+		"heading": "The fairground",
+		"badge": "SEAT",
+		"color": Color("bd8246"),
+		"description": "Two rows of plank seating. There is one behind each coop.",
+		"facts": ["Plank benches on darkened legs", "Fills with spectator birds"],
+	},
+	{
+		"id": EXHIBIT_TREE,
+		"title": "The Oak",
+		"heading": "The fairground",
+		"badge": "TREE",
+		"color": Color("5cb238"),
+		"description": (
+			"Three overlapping crowns on a leaning trunk. One stands past each "
+			+ "goal line, which is how you read depth across the field."
+		),
+		"facts": ["Three ellipsoid crowns, lightest on top", "Trunk leans; the crowns do not"],
+	},
+	{
+		"id": EXHIBIT_BUNTING,
+		"title": "The Bunting",
+		"heading": "The fairground",
+		"badge": "FLAG",
+		"color": Color("e8b84b"),
+		"description": (
+			"A sagging line of triangles in both coops' colours, strung between "
+			+ "two poles over the north fence."
+		),
+		"facts": [
+			"The sag is a sine, not a simulation",
+			"Every third flag is fair-day gold",
+		],
+	},
+	{
+		"id": EXHIBIT_SHOWGROUND,
+		"title": "Cluck County Showground",
+		"heading": "The whole show",
+		"badge": "ALL",
+		"color": Color("7cd44a"),
+		"description": (
+			"Everything at once: mown stripes, the dirt track, goal lines, "
+			+ "fence, bunting, feed sacks, the water trough and the barn."
+		),
+		"facts": [
+			"One surface, one draw call, whole fairground",
+			"Built once per match from the rope length",
+			"Zoom out to see how little of it the camera ever shows",
+		],
+		"requires_achievement": "pit_first_match",
+	},
+]

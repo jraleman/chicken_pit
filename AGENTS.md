@@ -31,6 +31,8 @@ It uses real 3D inside a `SubViewport`, not a replacement for the shared
 | `pit/pit_lighting.gd`, `sunset_sky.gdshader` | Scene-clock sunset and painted sky |
 | `pit/pit_music.gd` | Owned Music-bus playback and synchronized danger stem |
 | `ui/tug_meter.gd` | Native-resolution strength, knot and live key hints |
+| `ui/hat_preview.gd` / `.tscn` | Store-card portrait: one hatted hen in a `SubViewport` |
+| `ui/gallery_stage.gd` / `.tscn` | Gallery turntable: every exhibit, auto-framed, drawn on demand |
 | `ui/menu_*.tres`, `menu_background.gdshader` | Standalone menu backdrop, plaque, widget skin and sounds |
 | `ui/share_art.gd` / `.tscn` | Original farm portrait in the shared scorecard |
 | `intro.gd` / `.tscn` | Existing narrated standalone opening |
@@ -68,9 +70,10 @@ test; load it at runtime after autoloads exist.
 save rendered images. Do not claim graphics coverage from a headless run.
 
 The host also provides `game_shell_test.gd`, `lives_mode_test.gd`,
-`accessibility_test.gd`, `game_options_test.gd`, `single_game_test.gd` and
-custom-key menu coverage. Run affected coverage when changing those seams.
-There is no separate linter or package manager.
+`accessibility_test.gd`, `game_options_test.gd`, `single_game_test.gd`,
+`store_test.gd`, `gallery_test.gd` and custom-key menu coverage. Run affected
+coverage when changing those seams. There is no separate linter or package
+manager.
 
 ## Framework boundary
 
@@ -94,6 +97,28 @@ There is no separate linter or package manager.
   Chicken Pit specializes `_active_player_indices`, `_every_player_is_out`
   and `_remaining_lives`: a duel ends when **either** coop is eliminated,
   unlike the shell's default independent-score survival rule.
+- The hat store is manifest data (`STORE_ITEMS`, `STORE_SLOTS`,
+  `STORE_CURRENCY` in `chicken_pit_options.gd`), not a screen this game owns.
+  The shared `scenes/menus/store.tscn` renders it; the only thing this game
+  supplies is `ui/hat_preview.tscn` for the card art. Read the result with
+  `Store.equipped_id(game_id(), ChickenPitOptions.hat_slot(index))` from
+  `_load_round_settings()`, so a hat swapped from the pause menu lands at the
+  next countdown. `pit_view.gd` must not touch the `Store` autoload — it is
+  loaded by `pit_view_test.gd`, and hats arrive as a plain argument to
+  `reset_round()`.
+- The gallery is manifest data too (`GALLERY_EXHIBITS` in
+  `chicken_pit_options.gd`), rendered by the shared `scenes/menus/gallery.tscn`.
+  The only thing this game supplies is `ui/gallery_stage.tscn`, which builds
+  every exhibit through the same `ChickenRig` / `Scenery` calls a match uses —
+  never a second, prettier model made for the display case. A new exhibit is a
+  dictionary plus a `match` arm in `mesh_for()` and a `FRAMING` entry; the
+  camera distance is derived from the mesh, so do not hand-tune one.
+  `gallery_stage.gd` resolves `Store` from the tree rather than naming it, and
+  returns no hat when it is outside a tree, which is what lets
+  `pit_geometry_test.gd` build all nine exhibits headlessly.
+- Adding geometry to the gallery means adding a **public** accessor beside
+  `Scenery.barn_mesh()` (`pit_mesh`, `stand_mesh`, `tree_mesh`, `bunting_mesh`),
+  never copying the private builder's body.
 
 ## Mechanics invariants
 
@@ -138,7 +163,17 @@ before brightening either. Note that Godot predefines `PI` in shaders, and
 `single_game_test.gd` reports a pass even when a shader fails to compile.
 Use the scene's player colours rather than hardcoding another red/blue pair.
 Tall combs, bonnets, labelled goals and the textual tug meter distinguish sides
-without relying on colour. Rebound keys must appear immediately.
+without relying on colour. Rebound keys must appear immediately. A store hat is
+**additive**: it perches above the comb or the bonnet on head part `3.0` so it
+dips with the head, keeps a band in its wearer's team colour, and never removes
+either silhouette. `tests/pit_geometry_test.gd` asserts that for every hat in
+`STORE_ITEMS`, so a new hat needs no new test — only geometry that clears
+`COMB_HAT_BASE`/`BONNET_HAT_BASE` and stays inside the single batched surface.
+The same file builds every entry in `GALLERY_EXHIBITS` and asserts it is one
+batched surface with something in it, that the stage knows where to open it
+from, and that `COOP_COLORS` still matches the pair `gameplay.tscn` plays in —
+the gallery draws birds when no round exists, so it cannot read them off the
+shell.
 
 The model sources are original geometry, not placeholder asset-store links.
 Batch scenery; share the chicken mesh within a coop; use `MultiMesh` for
