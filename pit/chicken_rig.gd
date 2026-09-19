@@ -1,7 +1,7 @@
 extends Node3D
 
 ## Rigid, vertex-painted toy parts, animated in a single draw call per bird.
-## Tall combs and tied bonnets distinguish the coops without relying on colour.
+## Bare birds keep their combs; store hats use the same rig without a comb.
 
 const ToyMesh = preload("res://games/chicken_pit/pit/toy_mesh.gd")
 const BIRD_SHADER := preload("res://games/chicken_pit/pit/chicken.gdshader")
@@ -15,13 +15,8 @@ const FALL_SLIDE_END := 0.34
 const FALL_DROP_START := 0.48
 const FALL_LAND_START := 0.86
 
-## Where a hat sits. A comb crests at y 1.905 and a bonnet dome at 1.815, so a
-## hat perches just above either: the two silhouettes stay readable, which is
-## how the coops are told apart without colour.
-const COMB_HAT_BASE := 1.90
-const BONNET_HAT_BASE := 1.82
-## Every hat is centred over the crest rather than the skull, so it reads as
-## worn from the side the camera actually sees.
+## The comb-free variant lets both coops wear centred hats against the head.
+const HAT_BASE := 1.58
 const HAT_CENTRE_X := 0.35
 const HAT_PART := 3.0
 
@@ -144,7 +139,30 @@ func beak_position() -> Vector3:
 ## [param hat] is a store item id; an unknown or empty one simply leaves the
 ## bird bare, so the pit never depends on a purchase having happened.
 static func build_mesh(team: Color, bonnet: bool, hat := "") -> ArrayMesh:
+	var hat_ready := _is_store_hat(hat)
 	var toy := ToyMesh.new()
+	_add_bird(toy, team, bonnet, hat_ready)
+	if hat_ready:
+		_add_hat(toy, hat, team)
+	return toy.finish()
+
+
+## The shared body under a store hat, without comb geometry to clip through it.
+static func hat_ready_mesh(team: Color, bonnet: bool) -> ArrayMesh:
+	var toy := ToyMesh.new()
+	_add_bird(toy, team, bonnet, true)
+	return toy.finish()
+
+
+static func _is_store_hat(hat: String) -> bool:
+	for item: Dictionary in ChickenPitOptions.STORE_ITEMS:
+		if str(item["id"]) == hat:
+			return str(item["kind"]) == ChickenPitOptions.HAT_KIND \
+				and not bool(item.get("default", false))
+	return false
+
+
+static func _add_bird(toy: ToyMesh, team: Color, bonnet: bool, hat_ready: bool) -> void:
 	toy.ellipsoid(Vector3(-0.17, 0.77, 0.0), Vector3(1.20, 1.08, 0.86), CREAM)
 	toy.ellipsoid(Vector3(0.10, 0.96, 0.0), Vector3(0.66, 0.77, 0.66), CREAM)
 	for side in [-1.0, 1.0]:
@@ -218,123 +236,338 @@ static func build_mesh(team: Color, bonnet: bool, hat := "") -> ArrayMesh:
 				Vector3(0.20, 1.12, side * 0.29), Vector3(0.11, 0.55, 0.045),
 				team, Vector3(0.0, 0.0, -0.2), 3.0
 			)
-	else:
+	elif not hat_ready:
 		for lobe in 3:
 			toy.ellipsoid(
 				Vector3(0.16 + lobe * 0.18, 1.64 + lobe * 0.035, 0.0),
 				Vector3(0.21, 0.39, 0.13), team,
 				Vector3(0.0, 0.0, -0.22), 3.0, 8, 4
 			)
-	_add_hat(toy, hat, team, BONNET_HAT_BASE if bonnet else COMB_HAT_BASE)
-	return toy.finish()
 
 
-## Hats sit on top of the bird rather than replacing anything, and every one of
-## them carries a band in the wearer's colour, so a dressed pit still reads as
-## two coops. They are appended to the same surface and tagged as head parts, so
-## a hat costs no draw call and dips with the head it is worn on.
-static func _add_hat(toy: ToyMesh, hat: String, team: Color, base: float) -> void:
+## Trim carries the team colour; every piece joins the head's single surface.
+static func _add_hat(toy: ToyMesh, hat: String, team: Color) -> void:
+	var base := HAT_BASE
+	var centre_x := HAT_CENTRE_X
 	match hat:
 		ChickenPitOptions.HAT_STRAW:
 			var straw := Color("e8c46a")
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.02, 0.0), 0.52, 0.05, straw.darkened(0.12),
+				Vector3(centre_x, base + 0.02, 0.0), 0.52, 0.05, straw.darkened(0.12),
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.13, 0.0), 0.33, 0.20, straw,
+				Vector3(centre_x, base + 0.20, 0.0), 0.33, 0.34, straw,
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.09, 0.0), 0.345, 0.08, team,
+				Vector3(centre_x, base + 0.09, 0.0), 0.345, 0.08, team,
 				Vector3.ZERO, -1.0, HAT_PART
+			)
+		ChickenPitOptions.HAT_BERET:
+			var cloth := Color("a94d66")
+			toy.ellipsoid(
+				Vector3(centre_x - 0.03, base + 0.17, 0.0), Vector3(0.82, 0.34, 0.72),
+				cloth, Vector3(0.0, 0.0, 0.10), HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.025, 0.0), 0.34, 0.09, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.355, 0.0), 0.035, 0.12, cloth.darkened(0.3),
+				Vector3(0.0, 0.0, -0.25), -1.0, HAT_PART
 			)
 		ChickenPitOptions.HAT_PARTY:
 			var party := Color("ff6fae")
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.30, 0.0), 0.30, 0.58, party,
+				Vector3(centre_x, base + 0.30, 0.0), 0.30, 0.58, party,
 				Vector3.ZERO, 0.02, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.06, 0.0), 0.305, 0.09, team,
+				Vector3(centre_x, base + 0.06, 0.0), 0.305, 0.09, team,
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.ellipsoid(
-				Vector3(HAT_CENTRE_X, base + 0.62, 0.0), Vector3(0.17, 0.17, 0.17),
+				Vector3(centre_x, base + 0.62, 0.0), Vector3(0.17, 0.17, 0.17),
+				CREAM, Vector3.ZERO, HAT_PART, 8, 4
+			)
+		ChickenPitOptions.HAT_BEANIE:
+			var wool := Color("8b78b8")
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.16, 0.0), Vector3(0.70, 0.40, 0.66),
+				wool, Vector3.ZERO, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.04, 0.0), 0.36, 0.12, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.40, 0.0), Vector3(0.19, 0.19, 0.19),
 				CREAM, Vector3.ZERO, HAT_PART, 8, 4
 			)
 		ChickenPitOptions.HAT_COWBOY:
 			var leather := Color("8a5a33")
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.03, 0.0), 0.62, 0.06, leather,
+				Vector3(centre_x, base + 0.03, 0.0), 0.62, 0.06, leather,
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.22, 0.0), 0.31, 0.36, leather.lightened(0.12),
+				Vector3(centre_x, base + 0.22, 0.0), 0.31, 0.36, leather.lightened(0.12),
 				Vector3.ZERO, 0.27, HAT_PART
 			)
 			toy.box(
-				Vector3(HAT_CENTRE_X, base + 0.39, 0.0), Vector3(0.34, 0.10, 0.12),
+				Vector3(centre_x, base + 0.39, 0.0), Vector3(0.34, 0.10, 0.12),
 				leather.darkened(0.28), Vector3.ZERO, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.09, 0.0), 0.325, 0.09, team,
+				Vector3(centre_x, base + 0.09, 0.0), 0.325, 0.09, team,
 				Vector3.ZERO, -1.0, HAT_PART
+			)
+		ChickenPitOptions.HAT_RAIN:
+			var oilskin := Color("f6c84f")
+			toy.cylinder(
+				Vector3(centre_x, base + 0.035, 0.0), 0.54, 0.14, oilskin,
+				Vector3.ZERO, 0.34, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.18, 0.0), 0.31, 0.30, oilskin.lightened(0.12),
+				Vector3.ZERO, 0.28, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.095, 0.0), 0.325, 0.08, team,
+				Vector3.ZERO, 0.31, HAT_PART
+			)
+		ChickenPitOptions.HAT_PROPELLER:
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.13, 0.0), Vector3(0.72, 0.34, 0.70),
+				Color("59ac9c"), Vector3.ZERO, HAT_PART
+			)
+			toy.ellipsoid(
+				Vector3(centre_x + 0.31, base + 0.025, 0.0), Vector3(0.48, 0.06, 0.62),
+				team, Vector3.ZERO, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.02, 0.0), 0.365, 0.08, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.37, 0.0), 0.035, 0.20, Color("9aa6b5"),
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			for blade in 2:
+				toy.box(
+					Vector3(centre_x, base + 0.475, 0.0), Vector3(0.66, 0.04, 0.11),
+					BEAK if blade == 0 else CREAM,
+					Vector3(0.0, PI * (0.25 + float(blade) * 0.5), 0.0), HAT_PART
+				)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.49, 0.0), Vector3(0.11, 0.10, 0.11),
+				BEAK, Vector3.ZERO, HAT_PART, 8, 4
 			)
 		ChickenPitOptions.HAT_VIKING:
 			var steel := Color("9aa6b5")
 			toy.ellipsoid(
-				Vector3(HAT_CENTRE_X, base + 0.06, 0.0), Vector3(0.68, 0.54, 0.64),
+				Vector3(centre_x, base + 0.16, 0.0), Vector3(0.68, 0.40, 0.64),
 				steel, Vector3.ZERO, HAT_PART, 10, 5
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.02, 0.0), 0.36, 0.09, team,
+				Vector3(centre_x, base + 0.02, 0.0), 0.36, 0.09, team,
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.box(
-				Vector3(HAT_CENTRE_X + 0.27, base - 0.08, 0.0), Vector3(0.09, 0.30, 0.11),
+				Vector3(centre_x + 0.27, base + 0.03, 0.0), Vector3(0.09, 0.18, 0.11),
 				steel.lightened(0.1), Vector3.ZERO, HAT_PART
 			)
 			for side in [-1.0, 1.0]:
 				toy.cylinder(
-					Vector3(HAT_CENTRE_X, base + 0.24, side * 0.30), 0.11, 0.36,
+					Vector3(centre_x, base + 0.24, side * 0.30), 0.11, 0.36,
 					Color("efe6d2"), Vector3(side * 0.72, 0.0, 0.0), 0.02, HAT_PART
 				)
+		ChickenPitOptions.HAT_EXPLORER:
+			var pith := Color("c8b078")
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.015, 0.0), Vector3(1.04, 0.08, 0.88),
+				pith.darkened(0.12), Vector3.ZERO, HAT_PART
+			)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.15, 0.0), Vector3(0.78, 0.40, 0.70),
+				pith, Vector3.ZERO, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.045, 0.0), 0.375, 0.07, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.385, 0.0), 0.08, 0.08, pith.darkened(0.2),
+				Vector3.ZERO, 0.055, HAT_PART
+			)
+		ChickenPitOptions.HAT_CHEF:
+			toy.cylinder(
+				Vector3(centre_x, base + 0.25, 0.0), 0.29, 0.34, CREAM,
+				Vector3.ZERO, 0.34, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.08, 0.0), 0.31, 0.18, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			for puff in 4:
+				var angle := float(puff) / 4.0 * TAU
+				toy.ellipsoid(
+					Vector3(centre_x + cos(angle) * 0.18, base + 0.45, sin(angle) * 0.18),
+					Vector3(0.40, 0.36, 0.40), CREAM, Vector3.ZERO, HAT_PART, 8, 4
+				)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.51, 0.0), Vector3(0.47, 0.38, 0.47),
+				CREAM, Vector3.ZERO, HAT_PART, 8, 4
+			)
 		ChickenPitOptions.HAT_TOP:
 			var silk := Color("3a3d4c")
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.02, 0.0), 0.55, 0.06, silk,
+				Vector3(centre_x, base + 0.02, 0.0), 0.55, 0.06, silk,
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.34, 0.0), 0.34, 0.62, silk.lightened(0.08),
+				Vector3(centre_x, base + 0.34, 0.0), 0.34, 0.62, silk.lightened(0.08),
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.10, 0.0), 0.355, 0.11, team,
+				Vector3(centre_x, base + 0.10, 0.0), 0.355, 0.11, team,
 				Vector3.ZERO, -1.0, HAT_PART
+			)
+		ChickenPitOptions.HAT_PIRATE:
+			var felt := Color("34333f")
+			var centre := Vector3(centre_x, base + 0.025, 0.0)
+			var corners := PackedVector3Array()
+			for corner in 3:
+				var angle := float(corner) / 3.0 * TAU
+				corners.append(Vector3(
+					centre_x + cos(angle) * 0.58, base + 0.12, sin(angle) * 0.58))
+				angle += PI / 3.0
+				corners.append(Vector3(
+					centre_x + cos(angle) * 0.43, base + 0.34, sin(angle) * 0.43))
+			for edge in corners.size():
+				var a := corners[edge]
+				var b := corners[(edge + 1) % corners.size()]
+				var low_a := a - Vector3.UP * 0.045
+				var low_b := b - Vector3.UP * 0.045
+				toy.triangle(centre, b, a, felt, HAT_PART)
+				toy.triangle(centre - Vector3.UP * 0.045, low_a, low_b,
+					felt.darkened(0.2), HAT_PART)
+				toy.triangle(a, b, low_a, team, HAT_PART)
+				toy.triangle(b, low_b, low_a, team, HAT_PART)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.14, 0.0), Vector3(0.70, 0.37, 0.65),
+				felt.lightened(0.08), Vector3.ZERO, HAT_PART
+			)
+			toy.ellipsoid(
+				Vector3(centre_x + 0.31, base + 0.21, 0.0), Vector3(0.08, 0.13, 0.12),
+				CREAM, Vector3.ZERO, HAT_PART, 8, 4
+			)
+		ChickenPitOptions.HAT_MUSHROOM:
+			toy.cylinder(
+				Vector3(centre_x, base + 0.015, 0.0), 0.315, 0.075, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.075, 0.0), 0.50, 0.075, CREAM,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			var cap := SphereMesh.new()
+			cap.radius = 0.5
+			cap.height = 0.5
+			cap.is_hemisphere = true
+			cap.radial_segments = 12
+			cap.rings = 6
+			toy.append(cap, Transform3D(
+				Basis.IDENTITY.scaled(Vector3(1.0, 0.62, 1.0)),
+				Vector3(centre_x, base + 0.10, 0.0)), Color("db595f"), HAT_PART)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.405, 0.0), Vector3(0.18, 0.05, 0.18),
+				CREAM, Vector3.ZERO, HAT_PART, 8, 4
+			)
+			for spot in 4:
+				var angle := float(spot) / 4.0 * TAU
+				var rise := 0.31 * sqrt(1.0 - pow(0.33 / 0.5, 2.0))
+				var normal := Vector3(cos(angle) * 0.33 / 0.25,
+					rise / (0.31 * 0.31), sin(angle) * 0.33 / 0.25).normalized()
+				var at := Vector3(centre_x + cos(angle) * 0.33,
+					base + 0.10 + rise, sin(angle) * 0.33)
+				toy.ellipsoid(
+					at - normal * 0.015, Vector3(0.17, 0.06, 0.17), CREAM,
+					Basis(Quaternion(Vector3.UP, normal)).get_euler(), HAT_PART, 8, 4
+				)
+		ChickenPitOptions.HAT_WIZARD:
+			var felt := Color("6852a3")
+			toy.cylinder(
+				Vector3(centre_x, base + 0.015, 0.0), 0.49, 0.06, felt.darkened(0.12),
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x - 0.04, base + 0.37, 0.0), 0.31, 0.70, felt,
+				Vector3(0.0, 0.0, 0.12), 0.015, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.07, 0.0), 0.32, 0.08, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.box(
+				Vector3(centre_x + 0.315, base + 0.08, 0.0), Vector3(0.035, 0.10, 0.13),
+				Color("ffd45c"), Vector3.ZERO, HAT_PART
+			)
+			toy.box(
+				Vector3(centre_x + 0.334, base + 0.08, 0.0), Vector3(0.012, 0.05, 0.07),
+				felt.darkened(0.3), Vector3.ZERO, HAT_PART
+			)
+		ChickenPitOptions.HAT_SPROUT:
+			var clay := Color("ba754e")
+			toy.cylinder(
+				Vector3(centre_x, base + 0.17, 0.0), 0.34, 0.31, clay,
+				Vector3.ZERO, 0.28, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.055, 0.0), 0.385, 0.12, clay.lightened(0.12),
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.09, 0.0), 0.39, 0.035, team,
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			toy.cylinder(
+				Vector3(centre_x, base + 0.455, 0.0), 0.025, 0.28, Color("5a914f"),
+				Vector3.ZERO, -1.0, HAT_PART
+			)
+			for side in [-1.0, 1.0]:
+				toy.ellipsoid(
+					Vector3(centre_x + side * 0.095, base + 0.49, side * 0.045),
+					Vector3(0.27, 0.07, 0.13), Color("79b854"),
+					Vector3(0.0, -side * 0.35, side * 0.5), HAT_PART, 8, 4
+				)
+			toy.ellipsoid(
+				Vector3(centre_x, base + 0.60, 0.0), Vector3(0.13, 0.13, 0.13),
+				BEAK, Vector3.ZERO, HAT_PART, 8, 4
 			)
 		ChickenPitOptions.HAT_CROWN:
 			var gold := Color("ffd45c")
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.10, 0.0), 0.38, 0.20, gold,
+				Vector3(centre_x, base + 0.10, 0.0), 0.38, 0.20, gold,
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			toy.cylinder(
-				Vector3(HAT_CENTRE_X, base + 0.21, 0.0), 0.40, 0.05, gold.lightened(0.25),
+				Vector3(centre_x, base + 0.21, 0.0), 0.40, 0.05, gold.lightened(0.25),
 				Vector3.ZERO, -1.0, HAT_PART
 			)
 			for point in 5:
 				var angle := float(point) / 5.0 * TAU
 				toy.cylinder(
 					Vector3(
-						HAT_CENTRE_X + cos(angle) * 0.30, base + 0.34, sin(angle) * 0.30
+						centre_x + cos(angle) * 0.30, base + 0.34, sin(angle) * 0.30
 					),
 					0.09, 0.28, gold, Vector3.ZERO, 0.01, HAT_PART
 				)
 				toy.ellipsoid(
 					Vector3(
-						HAT_CENTRE_X + cos(angle) * 0.365, base + 0.11,
+						centre_x + cos(angle) * 0.365, base + 0.11,
 						sin(angle) * 0.365
 					),
 					Vector3(0.12, 0.12, 0.12), team, Vector3.ZERO, HAT_PART, 6, 3

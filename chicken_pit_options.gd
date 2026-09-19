@@ -229,10 +229,20 @@ const HAT_SLOT_TWO := "pit_hat_blue"
 
 const HAT_BARE := "pit_hat_bare"
 const HAT_STRAW := "pit_hat_straw"
+const HAT_BERET := "pit_hat_beret"
 const HAT_PARTY := "pit_hat_party"
+const HAT_BEANIE := "pit_hat_beanie"
 const HAT_COWBOY := "pit_hat_cowboy"
+const HAT_RAIN := "pit_hat_rain"
+const HAT_PROPELLER := "pit_hat_propeller"
 const HAT_VIKING := "pit_hat_viking"
+const HAT_EXPLORER := "pit_hat_explorer"
+const HAT_CHEF := "pit_hat_chef"
 const HAT_TOP := "pit_hat_top"
+const HAT_PIRATE := "pit_hat_pirate"
+const HAT_MUSHROOM := "pit_hat_mushroom"
+const HAT_WIZARD := "pit_hat_wizard"
+const HAT_SPROUT := "pit_hat_sprout"
 const HAT_CROWN := "pit_hat_crown"
 
 const HAT_HEADING := "Hats"
@@ -255,10 +265,8 @@ const STORE_SLOTS: Array[Dictionary] = [
 	},
 ]
 
-## Hats sit above the comb and the bonnet rather than replacing them: those two
-## silhouettes are how the coops are told apart without colour, so no purchase
-## is allowed to remove them. Each hat keeps a band in the wearer's team colour
-## for the same reason.
+## Store hats use a comb-free head; the free look retains the natural comb.
+## The blue bonnet's brim/ties and every hat's team trim keep the coops readable.
 const STORE_ITEMS: Array[Dictionary] = [
 	{
 		"id": HAT_BARE,
@@ -282,6 +290,16 @@ const STORE_ITEMS: Array[Dictionary] = [
 		"heading": HAT_HEADING,
 	},
 	{
+		"id": HAT_BERET,
+		"kind": HAT_KIND,
+		"price": 60,
+		"title": "Fairground Beret",
+		"description": "Wine-red wool and a little stalk. A very cultured cluck.",
+		"badge": "BERET",
+		"color": Color("a94d66"),
+		"heading": HAT_HEADING,
+	},
+	{
 		"id": HAT_PARTY,
 		"kind": HAT_KIND,
 		"price": 70,
@@ -289,6 +307,16 @@ const STORE_ITEMS: Array[Dictionary] = [
 		"description": "A pointed hat with a pom on top. Celebrate before you win.",
 		"badge": "PARTY",
 		"color": Color("ff6fae"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_BEANIE,
+		"kind": HAT_KIND,
+		"price": 90,
+		"title": "Woolly Beanie",
+		"description": "A cosy wool cap with a bobble and a coop-coloured cuff.",
+		"badge": "WOOL",
+		"color": Color("8b78b8"),
 		"heading": HAT_HEADING,
 	},
 	{
@@ -302,6 +330,26 @@ const STORE_ITEMS: Array[Dictionary] = [
 		"heading": HAT_HEADING,
 	},
 	{
+		"id": HAT_RAIN,
+		"kind": HAT_KIND,
+		"price": 130,
+		"title": "Rainy-Day Hat",
+		"description": "A sunny yellow brim for thoroughly uncooperative weather.",
+		"badge": "RAIN",
+		"color": Color("f6c84f"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_PROPELLER,
+		"kind": HAT_KIND,
+		"price": 150,
+		"title": "Propeller Cap",
+		"description": "Ready for take-off. Still terrible at flying.",
+		"badge": "SPIN",
+		"color": Color("59ac9c"),
+		"heading": HAT_HEADING,
+	},
+	{
 		"id": HAT_VIKING,
 		"kind": HAT_KIND,
 		"price": 170,
@@ -312,6 +360,26 @@ const STORE_ITEMS: Array[Dictionary] = [
 		"heading": HAT_HEADING,
 	},
 	{
+		"id": HAT_EXPLORER,
+		"kind": HAT_KIND,
+		"price": 185,
+		"title": "Explorer Helmet",
+		"description": "A pith helmet for expeditions to the other end of the rope.",
+		"badge": "TREK",
+		"color": Color("c8b078"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_CHEF,
+		"kind": HAT_KIND,
+		"price": 200,
+		"title": "Chef's Toque",
+		"description": "Puffy kitchen whites. The only thing being served is defeat.",
+		"badge": "CHEF",
+		"color": Color("fff8e7"),
+		"heading": HAT_HEADING,
+	},
+	{
 		"id": HAT_TOP,
 		"kind": HAT_KIND,
 		"price": 240,
@@ -319,6 +387,46 @@ const STORE_ITEMS: Array[Dictionary] = [
 		"description": "For the coop that pulls a rope in formal dress.",
 		"badge": "TOP",
 		"color": Color("3a3d4c"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_PIRATE,
+		"kind": HAT_KIND,
+		"price": 260,
+		"title": "Pirate Tricorn",
+		"description": "Three folded corners, no sea legs.",
+		"badge": "PIRATE",
+		"color": Color("34333f"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_MUSHROOM,
+		"kind": HAT_KIND,
+		"price": 280,
+		"title": "Toadstool Cap",
+		"description": "A spotted mushroom cap. The freshest head in the field.",
+		"badge": "SHROOM",
+		"color": Color("db595f"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_WIZARD,
+		"kind": HAT_KIND,
+		"price": 300,
+		"title": "Wizard Hat",
+		"description": "A plum pointed hat. No spell can replace a steady rhythm.",
+		"badge": "MAGIC",
+		"color": Color("6852a3"),
+		"heading": HAT_HEADING,
+	},
+	{
+		"id": HAT_SPROUT,
+		"kind": HAT_KIND,
+		"price": 320,
+		"title": "Sprout Pot",
+		"description": "A terracotta pot with a leafy sprout. Grow your technique.",
+		"badge": "GROW",
+		"color": Color("ba754e"),
 		"heading": HAT_HEADING,
 	},
 	{
@@ -380,8 +488,8 @@ const GALLERY_EXHIBITS: Array[Dictionary] = [
 		"badge": "RED",
 		"color": Color("ff6b57"),
 		"description": (
-			"Six of these hold the red end of the rope. The tall comb is how "
-			+ "you tell the coops apart without relying on colour."
+			"Six of these hold the red end of the rope. Bare birds keep their "
+			+ "tall comb; store hats use a comb-free head so nothing pokes through."
 		),
 		"facts": [
 			"Rigid parts, one surface, zero skinning",
@@ -400,8 +508,8 @@ const GALLERY_EXHIBITS: Array[Dictionary] = [
 			+ "that stands in for the comb."
 		),
 		"facts": [
-			"Identical mesh, mirrored across the pit",
-			"Bonnet and comb are the non-colour side signal",
+			"Shared body and rig, mirrored across the pit",
+			"Bonnet brim and ties stay visible with store hats",
 			"Wears whatever hat the blue coop has equipped",
 		],
 	},

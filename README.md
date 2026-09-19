@@ -17,7 +17,8 @@ project owns the engine configuration, the autoloads and every shared screen.
 
 **Cluck County's Great Pull-Off** is a real 3D toy-farm diorama: a
 cross-braced red barn, mown grass, bunting, bleachers full of chickens, and
-six rigid-part birds per coop. Red wears tall combs; blue wears tied bonnets.
+six rigid-part birds per coop. The bare look gives red tall combs and blue tied
+bonnets.
 The knot travels along a sagging rope, birds brace and flap with each accepted
 pull, and a pin sends the losing coop tumbling into a real, straw-lined hole
 in the middle of the arena. The birds skid, teeter at the lip, kick and flap
@@ -146,8 +147,8 @@ cd ..\..
 ```
 
 That drives a real round with a scripted puller rotating `Q`/`W`/`E` at a legal
-cadence, then writes `assets/video/tutorial_chicken_pit.ogv` and its poster,
-which `game.gd` points at. `assets/pit-poster.png` stays the still above.
+cadence, then writes `assets/video/tutorial.ogv` and its poster inside this game
+folder, which `game.gd` points at. `assets/pit-poster.png` stays the still above.
 
 Clone the base project with its submodules, then run from `godot-base/`:
 
@@ -239,10 +240,20 @@ long rope on a slow decay from clearing the shelf in one sitting.
 | --- | --- | --- |
 | Comb & Bonnet | free | How a bird is born; worn until you buy something |
 | Straw Boater | 40 | Ribbon in coop colours |
+| Fairground Beret | 60 | Soft wine-red wool and a little stalk |
 | Party Cone | 70 | Pom on top |
+| Woolly Beanie | 90 | Soft wool, bobble and coop-coloured cuff |
 | Ten-Gallon Hat | 110 | Wide brim, creased crown |
+| Rainy-Day Hat | 130 | Yellow oilskin and a sloping brim |
+| Propeller Cap | 150 | Peaked cap with a colourful fixed propeller |
 | Horned Helm | 170 | Historically inaccurate |
+| Explorer Helmet | 185 | Pith dome, broad brim and a top vent |
+| Chef's Toque | 200 | Puffy kitchen whites |
 | Top Hat | 240 | Formal dress, on a rope |
+| Pirate Tricorn | 260 | Three folded corners with coop-coloured edging |
+| Toadstool Cap | 280 | Red mushroom dome with cream spots |
+| Wizard Hat | 300 | Leaning plum cone and a gold buckle |
+| Sprout Pot | 320 | Terracotta pot, leafy sprout and a golden bud |
 | Roost Crown | 360 | Needs the **Clean Sweep** achievement first |
 
 The two coops are **separate slots**, so a hat is bought once and can then be
@@ -250,12 +261,16 @@ worn by either side — or by both. Hats are read in `_load_round_settings()`,
 which means a change made from the pause menu dresses the birds at the next
 countdown rather than mid-pull.
 
-Every hat **sits above** the comb and the bonnet instead of replacing them, and
-keeps a band in its wearer's team colour. Those two silhouettes are how the
-coops are told apart without relying on colour, so no purchase is allowed to
-remove them — `tests/pit_geometry_test.gd` asserts it for all seven. The hats
-are built into the same single surface as the bird, so wearing one costs zero
-extra draw calls.
+Every equipped hat uses a **comb-free chicken variant**, centred directly on the
+head so no comb can poke through the crown or brim. Selecting **Comb & Bonnet**
+restores the original model; empty or unknown hat ids also keep the natural look.
+The body, face and animation are shared, and blue keeps its bonnet brim and ties.
+Every hat carries trim in its wearer's team colour.
+
+`tests/pit_geometry_test.gd` checks both model variants, bare-look restoration,
+head contact and animation tags for all seventeen store choices. Store portraits,
+gallery models and matches use these same builders and the bird's single
+surface, so hats add no draw calls.
 
 ## The gallery
 
@@ -288,11 +303,12 @@ ultrawide without a hand-tuned camera.
 Rebindable pull keys for both coops, audio captions for meaningful sound-only
 events, reduced motion, player labels that never rely on colour alone, and the
 intro narration transcribed on screen so the opening is never sound-only.
-Store hats are additive: they perch above the comb and the bonnet, so the two
-coop silhouettes survive every purchase. Every gallery exhibit carries a written
-label and two or three specification lines, so no model is carried by the
-picture alone; reduced motion parks the turntable and says so rather than
-leaving a switch that does nothing, and the model can still be turned by hand.
+Custom hats use a comb-free head; blue's bonnet brim and ties still distinguish
+it from red without relying on colour, alongside the labelled goals and meter.
+Every gallery exhibit carries a written label and two or three specification
+lines, so no model is carried by the picture alone. Reduced motion parks the
+turntable and says so rather than leaving a switch that does nothing; the model
+can still be turned by hand.
 Every orbit action has an on-screen button as well as a drag, and the arrow keys
 are deliberately left to menu navigation so a keyboard or d-pad player is never
 trapped inside the picture.

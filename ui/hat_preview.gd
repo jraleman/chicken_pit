@@ -10,7 +10,7 @@ extends Control
 ##
 ## The portrait is deliberately still. A shop full of turning models is a shop
 ## full of animation nobody asked for, and a hat reads from one angle — so the
-## viewport draws a single frame, which also keeps a seven-card shelf cheap and
+## viewport draws a single frame, which also keeps a larger shelf cheap and
 ## means reduced motion has nothing to switch off.
 
 const ChickenRig = preload("res://games/chicken_pit/pit/chicken_rig.gd")
@@ -22,9 +22,8 @@ const FRAMING := Vector3(0.35, 1.52, 0.0)
 ## Far enough back for a crown's points, close enough for a bare comb to fill
 ## the card. Three-quarter view, because a brim needs depth to read as a brim.
 const LENS := Vector3(2.5, 0.42, 1.05)
-## The red coop's colour. A portrait has to pick a side, and the comb — not the
-## bonnet — is the silhouette a hat has to leave standing.
-const PORTRAIT_TEAM := Color("e8453c")
+## The red coop's colour; the mesh selects its natural comb or hat-ready head.
+const PORTRAIT_TEAM := ChickenPitOptions.COOP_COLORS[0]
 
 var _viewport: SubViewport
 var _model: MeshInstance3D

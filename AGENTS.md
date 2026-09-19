@@ -36,7 +36,7 @@ It uses real 3D inside a `SubViewport`, not a replacement for the shared
 | `ui/menu_*.tres`, `menu_background.gdshader` | Standalone menu backdrop, plaque, widget skin and sounds |
 | `ui/share_art.gd` / `.tscn` | Original farm portrait in the shared scorecard |
 | `intro.gd` / `.tscn` | Existing narrated standalone opening |
-| `assets` | Original textures/WAVs, supplied icon and opening recording |
+| `assets` | Original textures/WAVs, supplied icon, opening recording and the instructions clip |
 | `tools/render_audio.py` | Offline audio authoring; Python standard library only |
 | `tools/render_cover.gd` | Offline 3D cover portrait; graphics display required |
 | `tests` | Standalone Godot `SceneTree` regression scripts |
@@ -163,12 +163,17 @@ before brightening either. Note that Godot predefines `PI` in shaders, and
 `single_game_test.gd` reports a pass even when a shader fails to compile.
 Use the scene's player colours rather than hardcoding another red/blue pair.
 Tall combs, bonnets, labelled goals and the textual tug meter distinguish sides
-without relying on colour. Rebound keys must appear immediately. A store hat is
-**additive**: it perches above the comb or the bonnet on head part `3.0` so it
-dips with the head, keeps a band in its wearer's team colour, and never removes
-either silhouette. `tests/pit_geometry_test.gd` asserts that for every hat in
-`STORE_ITEMS`, so a new hat needs no new test — only geometry that clears
-`COMB_HAT_BASE`/`BONNET_HAT_BASE` and stays inside the single batched surface.
+without relying on colour. Rebound keys must appear immediately. Store hats use
+**the comb-free chicken variant**, not a comb pushed through a hat. Keep the
+natural Comb & Bonnet model unchanged; only recognized non-default store hats
+select the same body exposed by `ChickenRig.hat_ready_mesh()`. Empty and unknown
+ids must keep the natural look. Blue retains its bonnet brim and ties as a
+non-colour distinction. Hats use `HAT_BASE`/`HAT_CENTRE_X` against the cream head,
+with their own team-coloured trim and head part `3.0` on every primitive so they
+dip with the head. `tests/pit_geometry_test.gd` checks the variant difference,
+fallback looks, head contact, bonnet trim and animation tags for every store
+item, all inside one batched surface. Authored hat triangles must pass the part
+to `ToyMesh.triangle()`; its default part is static scenery.
 The same file builds every entry in `GALLERY_EXHIBITS` and asserts it is one
 batched surface with something in it, that the stage knows where to open it
 from, and that `COOP_COLORS` still matches the pair `gameplay.tscn` plays in —
@@ -222,8 +227,8 @@ pull/notch captions consistent with the model. The host's `share_card_test.gd`
 covers theme switching and renders with a graphics display; its optional
 `--share-capture-dir=<absolute directory>` saves example cards.
 
-The instructions walkthrough clip is host-owned and lives outside this folder,
-at `res://assets/video/tutorial_chicken_pit.ogv` with its poster. Re-record it
+The instructions walkthrough clip is game-owned and lives in this folder, at
+`res://games/chicken_pit/assets/video/tutorial.ogv` with its poster. Re-record it
 from `godot-base` with
 `.\tools\record_tutorials.ps1 -Games chicken_pit -Godot (Get-Command godot).Source`
 after changing gameplay visuals, the pull gates or the capture captions. The

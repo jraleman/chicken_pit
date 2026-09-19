@@ -6,6 +6,9 @@ const Scenery = preload("res://games/chicken_pit/pit/scenery.gd")
 const ChickenRig = preload("res://games/chicken_pit/pit/chicken_rig.gd")
 const ToyMesh = preload("res://games/chicken_pit/pit/toy_mesh.gd")
 const GalleryStage = preload("res://games/chicken_pit/ui/gallery_stage.gd")
+const BIRD_CHANNELS := [
+	Mesh.ARRAY_VERTEX, Mesh.ARRAY_NORMAL, Mesh.ARRAY_COLOR, Mesh.ARRAY_TEX_UV2, Mesh.ARRAY_INDEX,
+]
 
 var _failures := PackedStringArray()
 
@@ -120,77 +123,125 @@ func _test_gallery_exhibits(colors: Array[Color]) -> void:
 	stage.free()
 
 
-## Every hat on the shelf has to be geometry the pit can actually wear: batched
-## into the same surface, tagged as head parts so it dips with the head, wearing
-## the coop's colour, and tall enough to be seen without burying the comb or the
-## bonnet that tell the two coops apart.
 func _test_store_hats(colors: Array[Color]) -> void:
 	for coop in 2:
 		var bare := ChickenRig.build_mesh(colors[coop], coop == 1)
-		var bare_top := bare.get_aabb().position.y + bare.get_aabb().size.y
-		var crest := ChickenRig.BONNET_HAT_BASE if coop == 1 else ChickenRig.COMB_HAT_BASE
+		var bare_arrays := bare.surface_get_arrays(0)
+		var bare_vertices: PackedVector3Array = bare_arrays[Mesh.ARRAY_VERTEX]
+		var bare_indices: PackedInt32Array = bare_arrays[Mesh.ARRAY_INDEX]
+		var body := ChickenRig.hat_ready_mesh(colors[coop], coop == 1)
+		var body_arrays := body.surface_get_arrays(0)
+		var body_vertices: PackedVector3Array = body_arrays[Mesh.ARRAY_VERTEX]
+		var body_indices: PackedInt32Array = body_arrays[Mesh.ARRAY_INDEX]
+		var body_top := body.get_aabb().end.y
+		_expect(body.get_surface_count() == 1, "The hat-ready body must remain one surface.")
+		for channel in BIRD_CHANNELS:
+			_expect(
+				bare_arrays[channel].slice(0, body_arrays[channel].size()) == body_arrays[channel],
+				"The hat-ready variant must preserve the body, face and all rigid-part tags."
+			)
+		if coop == 0:
+			var comb_only := body_vertices.size() < bare_vertices.size()
+			var bare_tags: PackedVector2Array = bare_arrays[Mesh.ARRAY_TEX_UV2]
+			var bare_paint: PackedColorArray = bare_arrays[Mesh.ARRAY_COLOR]
+			for index in range(body_vertices.size(), bare_vertices.size()):
+				comb_only = comb_only and bare_vertices[index].y > 1.40 \
+					and is_equal_approx(bare_tags[index].x, ChickenRig.HAT_PART) \
+					and bare_paint[index].is_equal_approx(colors[coop])
+			_expect(comb_only, "Only the red comb may be omitted from the hat-ready body.")
+			_expect(not is_finite(_surface_distance(
+				body, Vector3(2.0, 1.76, 0.0), Vector3.LEFT)),
+				"The hat-ready head must not leave a comb sticking out at the front.")
+		else:
+			_expect(body_vertices.size() == bare_vertices.size(),
+				"The blue hat-ready body must retain the complete bonnet and its ties.")
+		for fallback: String in ["", ChickenPitOptions.HAT_BARE, "pit_hat_unknown"]:
+			var fallback_arrays := ChickenRig.build_mesh(
+				colors[coop], coop == 1, fallback).surface_get_arrays(0)
+			for channel in BIRD_CHANNELS:
+				_expect(fallback_arrays[channel] == bare_arrays[channel],
+					"Empty, bare and unknown hat ids must restore the complete natural bird.")
+		_test_chicken_animation(body)
 		for item: Dictionary in ChickenPitOptions.STORE_ITEMS:
 			var hat := str(item["id"])
 			var mesh := ChickenRig.build_mesh(colors[coop], coop == 1, hat)
+			var label := "%s on coop %d" % [hat, coop + 1]
 			_expect(
 				mesh.get_surface_count() == 1,
-				"Wearing '%s' must not cost the bird a second draw call." % hat
+				"Wearing %s must not cost the bird a second draw call." % label
 			)
 			var arrays := mesh.surface_get_arrays(0)
+			var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
+			var paint: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+			var tags: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
 			var top: float = mesh.get_aabb().position.y + mesh.get_aabb().size.y
-			if bool(item.get("default", false)):
+			var is_bare := bool(item.get("default", false))
+			var reference := bare_arrays if is_bare else body_arrays
+			for channel in BIRD_CHANNELS:
 				_expect(
-					is_equal_approx(top, bare_top),
+					arrays[channel].slice(0, reference[channel].size()) == reference[channel],
+					"%s must use the correct natural or comb-free body without changing it." % label
+				)
+			if is_bare:
+				_expect(
+					vertices.size() == bare_vertices.size() and indices == bare_indices,
 					"The bare look must add nothing to the bird."
 				)
 				continue
 			_expect(
-				top > bare_top,
-				"'%s' must actually show above the bird it is worn on." % hat
+				top > body_top,
+				"%s must actually show above the bird it is worn on." % label
 			)
 			_expect(
-				(arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size()
-				> (bare.surface_get_arrays(0)[Mesh.ARRAY_VERTEX] as PackedVector3Array).size(),
-				"'%s' must add geometry rather than replace the bird's own." % hat
+				vertices.size() > body_vertices.size(),
+				"%s must add hat geometry to the hat-ready body." % label
+			)
+			var lowest := INF
+			var head_tagged := true
+			for index in range(body_vertices.size(), vertices.size()):
+				lowest = minf(lowest, vertices[index].y)
+				head_tagged = head_tagged and is_equal_approx(tags[index].x, ChickenRig.HAT_PART)
+			_expect(
+				lowest >= 1.50,
+				"%s must leave the eyes and bonnet ties exposed." % label
 			)
 			_expect(
-				_lowest_above(arrays, crest - 0.06) >= crest - 0.06,
-				"'%s' must perch above the comb or bonnet, not bury it." % hat
+				_contains_color(paint.slice(body_vertices.size()), colors[coop]),
+				"%s must add its own trim in the wearer's colour." % label
 			)
 			_expect(
-				_contains_color(arrays[Mesh.ARRAY_COLOR], colors[coop]),
-				"'%s' must keep a band in the wearer's colour." % hat
+				head_tagged,
+				"All of %s must be tagged as head geometry so no trim floats during a pull." % label
 			)
-			_expect(
-				_tagged_above(arrays, crest),
-				"'%s' must be tagged as head geometry so it dips with the head." % hat
-			)
-
-
-## The lowest vertex a hat contributes, found by ignoring everything the bare
-## bird already reaches. Returns [param floor_y] when the hat adds nothing.
-func _lowest_above(arrays: Array, floor_y: float) -> float:
-	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	var lowest := INF
-	for vertex in vertices:
-		if vertex.y >= floor_y:
-			lowest = minf(lowest, vertex.y)
-	return floor_y if lowest == INF else lowest
-
-
-## True when the geometry above [param height] is tagged as the head, which is
-## the part the vertex shader dips.
-func _tagged_above(arrays: Array, height: float) -> bool:
-	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
-	var tags: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
-	var found := false
-	for index in vertices.size():
-		if vertices[index].y <= height:
-			continue
-		if not is_equal_approx(tags[index].x, ChickenRig.HAT_PART):
-			return false
-		found = true
-	return found
+			if coop == 1:
+				var brim_origin := Vector3(2.0, 1.53, 0.0)
+				var visible_brim := _surface_distance(bare, brim_origin, Vector3.LEFT)
+				_expect(
+					is_finite(visible_brim) and is_equal_approx(
+						visible_brim, _surface_distance(mesh, brim_origin, Vector3.LEFT)),
+					"%s must leave the bonnet brim visible below the hat." % label
+				)
+			# Ignore the coloured crest: contact with it still leaves the hat
+			# raised above the cream head the player expects it to sit on.
+			for x: float in [0.29, 0.37, 0.45]:
+				var point := Vector2(x, 0.0)
+				var head := _surface_height(bare, point, 0, false, true)
+				var underside := _surface_height(mesh, point, body_indices.size(), true)
+				var overlap := head - underside
+				_expect(
+					overlap >= 0.005 and overlap <= 0.10,
+					"%s must touch the head at x %.2f without burying it (overlap %.3f)."
+					% [label, x, overlap]
+				)
+			if hat == ChickenPitOptions.HAT_MUSHROOM:
+				for offset: Vector2 in [Vector2.ZERO, Vector2(0.33, 0.0), Vector2(-0.33, 0.0),
+					Vector2(0.0, 0.33), Vector2(0.0, -0.33)]:
+					var point := Vector2(ChickenRig.HAT_CENTRE_X, 0.0) + offset
+					var surface := _surface_height(mesh, point, body_indices.size())
+					var cream := _surface_height(mesh, point, body_indices.size(), false, true)
+					_expect(is_finite(surface) and is_equal_approx(surface, cream),
+						"The toadstool's cream spots must sit on its surface, not inside the cap.")
 
 
 func _test_pit_opening(mesh: ArrayMesh) -> void:
@@ -249,18 +300,34 @@ func _test_chicken_animation(mesh: ArrayMesh) -> void:
 	bird.free()
 
 
-func _surface_height(mesh: ArrayMesh, point: Vector2) -> float:
+func _surface_height(
+	mesh: ArrayMesh, point: Vector2, first_index := 0, underside := false, head_only := false
+) -> float:
+	return 6.0 - _surface_distance(
+		mesh, Vector3(point.x, 6.0, point.y), Vector3.DOWN, first_index, underside, head_only)
+
+
+func _surface_distance(
+	mesh: ArrayMesh, origin: Vector3, direction: Vector3,
+	first_index := 0, farthest := false, head_only := false
+) -> float:
 	var arrays := mesh.surface_get_arrays(0)
 	var vertices: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
 	var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-	var height := -INF
-	var origin := Vector3(point.x, 6.0, point.y)
-	for offset in range(0, indices.size(), 3):
-		var hit: Variant = Geometry3D.ray_intersects_triangle(origin, Vector3.DOWN,
+	var paint: PackedColorArray = arrays[Mesh.ARRAY_COLOR]
+	var tags: PackedVector2Array = arrays[Mesh.ARRAY_TEX_UV2]
+	var distance := -INF if farthest else INF
+	for offset in range(first_index, indices.size(), 3):
+		var index := indices[offset]
+		if head_only and (not is_equal_approx(tags[index].x, ChickenRig.HAT_PART)
+			or not paint[index].is_equal_approx(ChickenRig.CREAM)):
+			continue
+		var hit: Variant = Geometry3D.ray_intersects_triangle(origin, direction,
 			vertices[indices[offset]], vertices[indices[offset + 1]], vertices[indices[offset + 2]])
 		if hit is Vector3:
-			height = maxf(height, hit.y)
-	return height
+			var hit_distance := origin.distance_to(hit)
+			distance = maxf(distance, hit_distance) if farthest else minf(distance, hit_distance)
+	return distance
 
 
 func _contains_color(colors: PackedColorArray, expected: Color) -> bool:

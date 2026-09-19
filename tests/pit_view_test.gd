@@ -88,6 +88,7 @@ func _run() -> void:
 		_expect(poster.save_png(_poster_path) == OK, "The game poster must save successfully.")
 
 	game.set_process(false)
+	await _test_store_hats(game)
 	await _test_pull_animation(game)
 	await _test_cinematics(game)
 	var history: PitHistory = game.get("_pit_history")
@@ -245,6 +246,61 @@ func _check_world(game: Node, length: int) -> void:
 		_expect(rect.has_point(camera.unproject_position(rear)),
 			"The full coops, not just the goals, must fit at rope length %d." % length)
 	_check_budget(game, "length %d" % length)
+
+
+func _test_store_hats(game: Node) -> void:
+	var view := game.get("_view") as Node
+	var state: PitState = game.get("_state")
+	var colors: Array[Color] = [game.get("player_one_color"), game.get("player_two_color")]
+	var original_hats: PackedStringArray = view.get("_hats")
+	var was_processing := view.is_processing()
+	view.set_process(false)
+	var preview := preload("res://games/chicken_pit/ui/hat_preview.tscn").instantiate() as Control
+	get_root().add_child(preview)
+	preview.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	preview.position = Vector2(-300.0, -300.0)
+	preview.size = Vector2(236.0, 176.0)
+	var portrait_body := ChickenRig.hat_ready_mesh(colors[0], false)
+	var body_count: int = portrait_body.surface_get_arrays(0)[Mesh.ARRAY_VERTEX].size()
+	for item: Dictionary in ChickenPitOptions.STORE_ITEMS:
+		var hat := str(item["id"])
+		view.call("reset_round", state, colors, 0, PackedStringArray([hat, hat]))
+		preview.call("configure", item)
+		for coop in 2:
+			var expected := ChickenRig.build_mesh(colors[coop], coop == 1, hat)
+			var birds: Array = view.get("_birds")
+			var lead: Node3D = birds[coop * 6]
+			var worn := (lead.get_child(0) as MeshInstance3D).mesh
+			_expect(worn.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+				== expected.surface_get_arrays(0)[Mesh.ARRAY_VERTEX],
+				"Every coop must wear the actual '%s' store mesh." % hat)
+			for index in 6:
+				var bird: Node3D = birds[coop * 6 + index]
+				_expect((bird.get_child(0) as MeshInstance3D).mesh == worn,
+					"All six birds in a coop must share the '%s' mesh." % hat)
+			view.call("accepted_pull", coop, 10.35, true)
+		await _advance_view(view, 0.1)
+		_check_budget(game, hat)
+		var portrait := preview.get("_model") as MeshInstance3D
+		var viewport := preview.get("_viewport") as SubViewport
+		var camera := viewport.get_node("Lens") as Camera3D
+		var rect := Rect2(Vector2.ZERO, Vector2(viewport.size)).grow(-2.0)
+		var vertices: PackedVector3Array = portrait.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		var fits := true
+		for index in range(body_count, vertices.size()):
+			var point := portrait.to_global(vertices[index])
+			fits = fits and not camera.is_position_behind(point) \
+				and rect.has_point(camera.unproject_position(point))
+		_expect(fits, "The store portrait must show all of '%s', including its top and brim." % hat)
+		_expect(viewport.get_render_info(
+			Viewport.RENDER_INFO_TYPE_VISIBLE, Viewport.RENDER_INFO_DRAW_CALLS_IN_FRAME) > 0,
+			"The '%s' store preview must actually render." % hat)
+		_capture("store-%s.png" % hat, viewport)
+		_capture("pit-%s.png" % hat)
+	preview.queue_free()
+	view.call("reset_round", state, colors, 0, original_hats)
+	view.set_process(was_processing)
+	await _render_frame()
 
 
 func _test_pull_animation(game: Node) -> void:
@@ -688,9 +744,10 @@ func _check_budget(game: Node, label: String) -> void:
 		"The pit's measured draw calls, including shadows, must stay below 60.")
 
 
-func _capture(name: String) -> void:
+func _capture(name: String, viewport: Viewport = null) -> void:
 	if not _capture_dir.is_empty():
-		_expect(get_root().get_texture().get_image().save_png(_capture_dir.path_join(name)) == OK,
+		var source := get_root() if viewport == null else viewport
+		_expect(source.get_texture().get_image().save_png(_capture_dir.path_join(name)) == OK,
 			"Could not save screenshot %s." % name)
 
 

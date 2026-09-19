@@ -1,3 +1,17 @@
+# Line endings and diff behaviour for the Chicken Pit repository.
+#
+# A nested repository keeps its own attributes, so the superproject's
+# .gitattributes does not reach in here — this is a local copy of the same
+# policy. Godot writes LF; pinning eol=lf keeps a Windows checkout from
+# disagreeing with the editor.
+#
+# This repository was committed from a Windows checkout with core.autocrlf=true
+# before the rule below existed, so 44 of its text blobs were stored CRLF and
+# the rule was quietly doing nothing. The index has since been renormalized to
+# LF; the working tree is left alone, because the clean filter strips CR on the
+# way in and a file sitting CRLF on disk keeps reading as unmodified until it
+# is next written.
+
 # Normalize EOL for everything Git detects as text.
 * text=auto eol=lf
 
@@ -10,11 +24,16 @@
 *.uid       text eol=lf
 *.svg       text eol=lf
 *.md        text eol=lf
+*.py        text eol=lf
 
 # Authored binary assets: never normalize, never diff as text.
 *.png       binary
 *.webp      binary
+*.jpg       binary
+*.jpeg      binary
 *.wav       binary
 *.mp3       binary
+*.ogg       binary
 *.ogv       binary
 *.ttf       binary
+*.otf       binary

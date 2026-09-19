@@ -101,11 +101,11 @@ func torus(
 	append(mesh, Transform3D(Basis.from_euler(rotation), at), color)
 
 
-func triangle(a: Vector3, b: Vector3, c: Vector3, color: Color) -> void:
+func triangle(a: Vector3, b: Vector3, c: Vector3, color: Color, part := 0.0) -> void:
 	_surface.set_normal((b - a).cross(c - a).normalized())
 	_surface.set_color(color)
 	_surface.set_uv(Vector2.ZERO)
-	_surface.set_uv2(Vector2.ZERO)
+	_surface.set_uv2(Vector2(part, 0.0))
 	# Godot's front faces are clockwise; preserve the intended outward normal.
 	for vertex: Vector3 in [a, c, b]:
 		_surface.add_vertex(vertex)

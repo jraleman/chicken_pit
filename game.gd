@@ -16,9 +16,9 @@ static func manifest() -> GameManifest:
 	game.title = "Chicken Pit"
 	game.tagline = "Two coops. One rope. Absolutely no dignity."
 	game.gameplay_scene_path = "res://games/chicken_pit/gameplay.tscn"
-	game.tutorial_video_path = "res://assets/video/tutorial_chicken_pit.ogv"
+	game.tutorial_video_path = "res://games/chicken_pit/assets/video/tutorial.ogv"
 	game.tutorial_poster_path = (
-		"res://assets/video/tutorial_chicken_pit_poster.webp"
+		"res://games/chicken_pit/assets/video/tutorial_poster.webp"
 	)
 	# The story the pit is named after, told once before the menu. Only a build
 	# that ships this game alone ever reaches it — a collection has not chosen a
