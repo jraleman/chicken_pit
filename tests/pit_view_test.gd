@@ -45,8 +45,10 @@ func _run() -> void:
 	save_timer.process_mode = Node.PROCESS_MODE_DISABLED
 	var original_game := GameCatalog.current_id()
 	GameCatalog.select(ChickenPitOptions.GAME_ID)
-	get_root().get_node("GameSession").call(
-		"configure_multiplayer", GameSession.PlayerTwoController.HUMAN)
+	var session := get_root().get_node("GameSession")
+	var controllers: Dictionary = session.get_script().get_script_constant_map()[
+		"PlayerTwoController"]
+	session.call("configure_multiplayer", controllers["HUMAN"])
 	_settings.call("reset_controls_to_defaults", ChickenPitOptions.GAME_ID)
 	_settings.call("set_value", Settings.ROUND_MODE_KEY, Settings.RoundMode.TIMER)
 	_settings.call("set_value", Settings.REDUCED_MOTION_KEY, false)

@@ -19,13 +19,14 @@ var _quality := PackedStringArray(["ROLL YOUR KEYS", "ROLL YOUR KEYS"])
 var _cpu := ""
 var _round_rule := "GROUND HELD WINS"
 var _panel: StyleBoxFlat
+var _unit := 1.0
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	accessibility_name = "Tug meter"
 	_panel = StyleBoxFlat.new()
-	_panel.bg_color = Color(INK, 0.94)
+	_panel.bg_color = Color(INK, 0.16)
 	_panel.border_color = Color(CREAM, 0.24)
 	_panel.set_border_width_all(1)
 	_panel.set_corner_radius_all(12)
@@ -90,16 +91,15 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	if _state == null or _panel == null:
 		return
-	var wide := size.x >= 860.0
-	var middle_width := minf(560.0, size.x * 0.38) if wide else size.x
-	var middle := Rect2(Vector2((size.x - middle_width) * 0.5, 0.0),
-		Vector2(middle_width, 82.0))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE * _unit)
+	var width := size.x / _unit
+	var middle_width := width * 0.44
+	var middle := Rect2(Vector2((width - middle_width) * 0.5, 0.0),
+		Vector2(middle_width, 30.0))
 	draw_style_box(_panel, middle)
 	var font := get_theme_default_font()
-	_text(font, _round_rule, middle.position + Vector2(0.0, 19.0),
-		middle_width, 13, Color(CREAM, 0.62))
-	var bar := Rect2(middle.position + Vector2(25.0, 34.0),
-		Vector2(middle_width - 50.0, 10.0))
+	var bar := Rect2(middle.position + Vector2(10.0, 12.0),
+		Vector2(middle_width - 20.0, 6.0))
 	draw_rect(bar, Color(CREAM, 0.15))
 	var center := bar.get_center()
 	var marker_x := center.x - _state.rope / _state.L * bar.size.x * 0.5
@@ -111,18 +111,28 @@ func _draw() -> void:
 		draw_line(Vector2(x, bar.position.y - 3.0), Vector2(x, bar.end.y + 3.0),
 			Color(CREAM, 0.9 if index == 0 else 0.35), 2.0 if index == 0 else 1.0)
 	draw_colored_polygon(PackedVector2Array([
-		Vector2(marker_x, center.y - 10.0), Vector2(marker_x + 7.0, center.y),
-		Vector2(marker_x, center.y + 10.0), Vector2(marker_x - 7.0, center.y),
+		Vector2(marker_x, center.y - 7.0), Vector2(marker_x + 5.0, center.y),
+		Vector2(marker_x, center.y + 7.0), Vector2(marker_x - 5.0, center.y),
 	]), CREAM)
-	_text(font, lead_text, middle.position + Vector2(0.0, 71.0),
-		middle_width, 19, color.lightened(0.2))
-
-	var team_width := minf(316.0, (size.x - middle_width - 48.0) * 0.5) if wide \
-		else (size.x - 12.0) * 0.5
+	var team_width := (width - middle_width - 24.0) * 0.5
 	for coop in 2:
-		var at := Vector2(0.0 if coop == 0 else size.x - team_width,
-			0.0 if wide else 92.0)
-		_draw_coop(font, coop, Rect2(at, Vector2(team_width, 82.0)))
+		var at := Vector2(0.0 if coop == 0 else width - team_width, 0.0)
+		draw_string(font, at + Vector2(0, 12), "P%d" % (coop + 1),
+			HORIZONTAL_ALIGNMENT_LEFT, team_width, 11, CREAM)
+		var gauge := Rect2(at + Vector2(0, 20), Vector2(team_width, 4))
+		draw_rect(gauge, Color(CREAM, 0.16))
+		draw_rect(Rect2(gauge.position,
+			Vector2(gauge.size.x * _state.strength[coop] / 100.0, gauge.size.y)), _colors[coop])
+		draw_string(font, at + Vector2(team_width - 32, 12), str(roundi(_state.strength[coop])),
+			HORIZONTAL_ALIGNMENT_RIGHT, 32, 11, CREAM)
+
+
+## Physical units keep the knot and both strength bars readable on a phone.
+func fit_width(width: float, unit: float) -> void:
+	_unit = maxf(unit, 0.01)
+	size = Vector2(width, 30.0 * _unit)
+	tooltip_text = "%s. %s" % [_round_rule, lead_text]
+	queue_redraw()
 
 
 func _draw_coop(font: Font, coop: int, rect: Rect2) -> void:

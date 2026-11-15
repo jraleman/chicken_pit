@@ -173,6 +173,7 @@ func _build_playfield() -> void:
 	_pit_music.name = "PitMusic"
 	add_child(_pit_music)
 	get_viewport().size_changed.connect(_resize_pit)
+	_shell_top_bar.resized.connect(_resize_pit, CONNECT_DEFERRED)
 	_resize_pit()
 	_configure_mode_ui()
 
@@ -567,8 +568,9 @@ func _resize_pit() -> void:
 	var bounds := _playfield_bounds()
 	_pit_container.position = bounds.position
 	_pit_container.size = bounds.size
-	_tug_meter.position = bounds.position + Vector2(16.0, 32.0)
-	_tug_meter.size = Vector2(maxf(bounds.size.x - 32.0, 0.0), 174.0)
+	_tug_meter.position = Vector2(bounds.position.x + 10 * _shell_hud_unit,
+		_shell_top_bar.get_global_rect().end.y + 8 * _shell_hud_unit)
+	_tug_meter.fit_width(maxf(bounds.size.x - 20.0 * _shell_hud_unit, 1.0), _shell_hud_unit)
 	if _view != null and _state != null:
 		_view.camera.update_camera(0.0, _state.rope,
 			_state.strength[0] - _state.strength[1])

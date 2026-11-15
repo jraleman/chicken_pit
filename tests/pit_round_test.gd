@@ -78,7 +78,9 @@ func _new_game(single := false, history_path := "") -> Node:
 	if single:
 		_session.call("configure_single_player")
 	else:
-		_session.call("configure_multiplayer", GameSession.PlayerTwoController.HUMAN)
+		var controllers: Dictionary = _session.get_script().get_script_constant_map()[
+			"PlayerTwoController"]
+		_session.call("configure_multiplayer", controllers["HUMAN"])
 	var packed := load(GAME_PATH) as PackedScene
 	var fixture := load(FIXTURE_PATH) as Script
 	if packed == null or fixture == null or not fixture.can_instantiate():
