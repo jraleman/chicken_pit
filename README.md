@@ -54,10 +54,11 @@ and stops on results or any menu exit. Replays restart one soundtrack; Lives
 exchanges keep the tune in time while releasing the danger layer.
 No model downloads, Blender installation, or asset-store account are needed.
 The warm, dark standalone menus open onto a colourful sunset-lit farm.
-The main menu wears an original square cover: two rival chickens pulling in
-front of Cluck County's barn, framed in cream and gold. It is a staged 3D
-render of the game's models, not a stock photograph or a HUD screenshot.
-The shareable scorecard uses that same full-colour farm portrait, gold and
+The main menu and parked picker cartridge wear a close-up square cover:
+two rival chickens pulling the actual rope over the pit on a golden fairground
+poster. It is a staged render of the game's models, not a stock photograph
+or a HUD screenshot. Icon branding and the shareable scorecard retain the
+original full-colour Cluck County farm portrait, gold and
 cream lettering, and a frozen fairground backdrop. Both coops' scores appear
 alongside pulls, notches taken and the best notch run, with the shared
 achievement panel and scannable stats QR code intact.
@@ -119,8 +120,10 @@ ui/menu_*.tres             # standalone menu backdrop, plaque, widget skin, soun
 ui/share_art.gd / .tscn    # original cover portrait in the shared scorecard
 assets/                    # icon, narration, original textures and WAV audio
 assets/ui/plaque.svg       # barn-board texture for the standalone menu plaque
-assets/menu-cover.png      # full-colour 1536-square standalone menu cover
-tools/render_cover.gd      # reproducible offline cover photography
+assets/cover.png           # 1024-square close-up cartridge cover
+assets/menu-cover.png      # original 1536-square icon/share farm portrait
+tools/cover_art.gd         # composition for the host's offline cover renderer
+tools/render_cover.gd      # reproducible original icon/share photography
 tools/render_audio.py      # reproducible offline sound-bank authoring
 tests/                     # model, options, intro, camera/audio and round/render coverage
 ```
@@ -130,13 +133,19 @@ tests/                     # model, options, intro, camera/audio and round/rende
 Rebuild the menu cover from this game folder with a graphics display:
 
 ```powershell
+godot --path ..\.. --script res://tools/render_covers.gd -- --game=all --games=chicken_pit
+godot --headless --path ..\.. --import
+```
+
+The separate original icon/share portrait still has its own renderer:
+
+```powershell
 godot --path ..\.. --script res://games/chicken_pit/tools/render_cover.gd -- --game=all
 godot --headless --path ..\.. --import
 ```
 
-Commit the generated `assets/menu-cover.png` with its source. The cover uses
-fixed poses and a dedicated viewport; it does not run a round or change saved
-settings.
+Keep both generated PNGs with their sources. Both use fixed poses and dedicated
+viewports; neither runs a round nor changes saved settings.
 
 The *How to play* screen's walkthrough clip is recorded by the base project's
 shared pipeline, not from this folder, and lands outside it:

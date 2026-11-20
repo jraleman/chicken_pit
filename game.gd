@@ -182,6 +182,7 @@ static func _theme() -> GameTheme:
 	var theme := GameTheme.new()
 	theme.style_share_card = true
 	theme.logo_texture_path = "res://games/chicken_pit/assets/menu-cover.png"
+	theme.cover_texture_path = "res://games/chicken_pit/assets/cover.png"
 	# Preserve the full-colour cover; the old silhouette used a cream tint.
 	theme.logo_color = Color.WHITE
 	## scenery.gd's barn red exactly. assets/ui/plaque.svg is authored in the
